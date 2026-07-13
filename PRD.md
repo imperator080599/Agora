@@ -1,7 +1,7 @@
 # PRD.md — Agora V1 Product Requirements
 
 **Working name:** Agora (working name only, per founder decision — final brand TBD in a dedicated naming/trademark phase)
-**Version:** 1.0
+**Version:** 1.1 — amended per ratified founder decisions D15–D20 (see §0); changes marked in §5.3, §9.1, §10.3
 **Date:** 2026-07-12
 **Status:** Authoritative V1 product specification.
 **Inherits from:** PRODUCT_STRATEGY.md (v2) · MONETIZATION_STRATEGY.md · DATA_ASSET_STRATEGY.md. (PRODUCT_DECISIONS.md does not exist; the decision log is §0 of this document and is canonical.)
@@ -24,6 +24,12 @@ Locked founder decisions D1–D7 (PRODUCT_STRATEGY.md §0) plus the seven launch
 | D12 | Launch cadence: 1 flagship Daily Claim + up to 3 supporting claims/day. Quality over volume; the pipeline publishes fewer when thresholds are unmet. |
 | D13 | Web-first: app-grade, mobile-first web product. Native apps deferred until the ritual/retention hypothesis validates. Architecture must not make future native apps unnecessarily difficult (product-level implication: all surfaces reachable by stable URL; notification logic channel-agnostic). |
 | D14 | "Agora" is a working name only, used internally until the naming phase. |
+| D15 | Debate Map side tabs / column headers display NO position-share numbers. The split module is the sole authoritative surface for position distribution; the map represents argument strength and structure, never stance popularity. (Amends §9.1.) |
+| D16 | Flagship selection cutoff is **21:00 Europe/Paris** (IANA-anchored, follows DST automatically). Publication remains anchored to the UTC claim-day model. (Amends §5.3.) |
+| D17 | Persuasion-attribution eligibility requires that the user actually **opened or expanded** the argument (`argument_viewed` = row expanded or sheet opened). Rendering, scrolling past, or impressions do NOT qualify. (Made explicit in §10.3.) |
+| D18 | V1 is light-mode only; dark mode deferred; design tokens must remain dark-ready. |
+| D19 | V1 uses open-license typefaces only, per DESIGN.md criteria, until the naming/brand phase. |
+| D20 | No production domain is hardcoded anywhere. A configurable canonical public origin (`PUBLIC_APP_URL`) drives canonical URLs, OG URLs, share links, share-card links, sitemaps, notification deep links, email links, and callback URLs; dev/preview environments use separate origins. Technical architecture must not block on the final domain. |
 
 ### Contradictions found across strategy documents, and their resolutions (also summarized in Final Output K)
 
@@ -228,7 +234,7 @@ LIVE/ARCHIVED → WITHDRAWN (any time, admin action)
 - **WITHDRAWN:** §5.8.
 
 ### 5.3 Flagship & supporting selection
-From the approved set, the founder marks one claim FLAGSHIP for the next UTC day in the review queue (one tap). If none marked by 21:00 UTC, the highest composite rubric score auto-selects. Flagship SHOULD be the day's most broadly answerable claim; CONFLICT-tier claims MAY be flagship at founder discretion but never by auto-selection. Supporting slots publish at 00:00, 06:00, 12:00 UTC (spreads freshness across timezones).
+From the approved set, the founder marks one claim FLAGSHIP for the next UTC day in the review queue (one tap). If none marked by **21:00 Europe/Paris** (IANA timezone, DST-following — D16), the highest composite rubric score among APPROVED claims auto-selects; unreviewed candidates are never auto-published. Flagship SHOULD be the day's most broadly answerable claim; CONFLICT-tier claims MAY be flagship at founder discretion but never by auto-selection. Supporting slots publish at 00:00, 06:00, 12:00 UTC (spreads freshness across timezones).
 
 ### 5.4 Closing recap (flagship only)
 At window end (+48h): recap panel generated onto the claim page and pushed per §14: final split · total positions · biggest single-day movement · the argument with most MOVED ME on each side · "the debate continues on the claim page." Recap content is derived from recorded events only (no editorializing).
@@ -297,7 +303,7 @@ Auto-tagged by the pipeline (topic = ongoing armed conflict). Requirements: (a) 
 
 ## 9. Debate Map (the body of the Claim Page)
 
-1. **Structure:** two columns on desktop / two toggle-tabs on mobile: **THE CASE FOR** (supports the claim) and **THE CASE AGAINST**. Column headers show side share of current split (post-position only). No graph visualization, no tree UI — ranked lists with one nesting level.
+1. **Structure:** two columns on desktop / two toggle-tabs on mobile: **THE CASE FOR** (supports the claim) and **THE CASE AGAINST**. Side tabs and column headers carry NO position-share numbers (D15): the split module is the sole surface for position distribution, and the map must never conflate stance popularity with argument quality. No graph visualization, no tree UI — ranked lists with one nesting level.
 2. **Sides & IT'S COMPLICATED:** there is no third column (C-resolution). IT'S-COMPLICATED voters appear in the split; their arguments bear on a chosen side (§8.1). Rationale: a third "nuance" lane fragments reading and creates a dumping ground; nuance expresses as counters and as complicated-stance authorship, which is labeled on the argument row ("argued by someone who says it's complicated").
 3. **Row anatomy:** rank number · argument text (full — 280 chars always fits) · author (pseudonym or Curated badge) · evidence chips (0–3, tap → Example Sheet) · signal line ("Backed by 214 · Convincing 89 (31 from the other side) · Moved 12") · counters affordance ("3 counters", collapsed by default, expand in place).
 4. **Ranking within a side (conceptual formula — not raw engagement):**
@@ -349,7 +355,7 @@ recorded position P1 (t0)
   → skip → position_changed(trigger=none). No persuasion event. Never re-prompted.
 ```
 ### 10.3 Eligibility
-Any stance transition among the three stances qualifies (including to/from IT'S COMPLICATED — a weakening/strengthening IS persuasion). The attribution list only offers arguments the user demonstrably viewed (no attributing what you didn't read).
+Any stance transition among the three stances qualifies (including to/from IT'S COMPLICATED — a weakening/strengthening IS persuasion). The attribution list only offers arguments the user demonstrably **opened or expanded** (D17): eligibility requires an `argument_viewed` record (row expanded or argument sheet opened) between the prior position and the change. Rendering in a list, scrolling past, or receiving an impression does NOT create eligibility. This distinction is preserved in the event and data architecture.
 ### 10.4 Multiple contributing arguments
 V1: exactly one attributed argument per change (radio, not checkboxes). Rationale: keeps the MOVED ME economy scarce and legible, and one primary mover is cognitively honest. Multi-attribution is LATER (trigger: users report attribution feels false; measured "something else" rate >40%).
 ### 10.5 Skipped attribution
