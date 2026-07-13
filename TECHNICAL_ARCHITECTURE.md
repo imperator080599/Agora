@@ -31,7 +31,7 @@ Optimized for: one founder building with Claude Code · fast iteration · low op
 | Scheduled jobs | pg-boss cron on the worker; **editorial cutoffs computed in `Europe/Paris` via IANA tz (Luxon/`Temporal`), publication in UTC** | Vercel cron | Same system as jobs; DST-correct by construction (D16) | — | — |
 | Search | **Postgres FTS (`websearch_to_tsquery`) + `pg_trgm` for typo tolerance** | Elasticsearch, Typesense, Algolia, Meilisearch | Claims-only corpus is ~1.5–2.5k rows/year; FTS is overqualified. External engines are pure ops burden here | Typo tolerance is "good", not Algolia-grade — acceptable per PRD §13 expectations | Agora Pro research search (argument/evidence cross-claim) is the trigger to evaluate a real engine — LATER by design |
 | Vector search (dup detection, evidence retrieval) | **pgvector in the same Postgres** | Pinecone, Qdrant | Corpus is thousands of rows; HNSW in pgvector is trivial at this scale | — | Dedicated vector DB only if library grows >5–10M embeddings |
-| Transactional email | **Resend** (DPA + SCCs; see SECURITY_PRIVACY §processors) | Postmark, Brevo (EU), SES | Best DX, solid deliverability, free tier covers launch | US processor — flagged as founder decision T-3 (EU alternative: Brevo) | Volume pricing or data-residency posture change |
+| Transactional email | **Brevo (EU)** — founder-ratified amendment replacing Resend | Resend, Postmark, SES | EU data-storage posture for a European-operated product handling opinion-adjacent data; removes one US transfer from the processor list; also serves as custom SMTP for Supabase Auth emails (magic links must not ride Supabase's default rate-limited SMTP in production). **Payload rule (founder decision):** emails carry only the minimum content required for delivery; no opinion content ever enters Brevo metadata, tags, contact attributes, or analytics fields — contact records hold address + delivery state only | Slightly weaker DX than Resend | Deliverability or volume-pricing problems |
 | Web push | **Standard Web Push (VAPID)** via `web-push` from the worker; subscriptions stored in the identity layer | OneSignal, Firebase | No third-party processor touching notification content; PRD §14 caps enforced in our code | iOS requires PWA install for push — a real reach constraint (risk register §18-item; email is the reliability channel by design) | Native apps (LATER) replace this constraint |
 | Analytics | **First-party only**: canonical events in Postgres (PRD §18), metrics as versioned SQL, INT-07 ops report renders them | PostHog, Amplitude, Plausible | Kill-test metrics are **frozen and auditable** (founder decision 4) — they must be computed from the authoritative event tables, not a third-party's interpretation; zero extra processors; PRD §18 explicitly excludes third-party trackers | No funnel-explorer UI — acceptable; the metric set is small and fixed | PostHog EU (no session replay, no autocapture) only if ad-hoc funnel exploration becomes a real recurring need |
 | Error monitoring | **Sentry (EU data residency)**, PII-scrubbed per SECURITY_PRIVACY logging rules | Rollbar, self-hosted GlitchTip | Standard, free tier, EU option | — | — |
@@ -60,7 +60,7 @@ graph TB
         NEWS[Allowlisted news sources RSS/HTTP]
         ANTH[Anthropic API]
         VOY[Voyage AI embeddings]
-        MAIL[Resend email]
+        MAIL[Brevo email EU]
         PUSHSVC[Browser push services]
         SENTRY[Sentry EU]
     end
@@ -112,7 +112,7 @@ graph TB
     WORKER --> ANLDB
     WORKER -->|delivery adapters only| IDN
     WORKER --> STORE
-    WORKER --> EXT1[Anthropic / Voyage / Resend / Push]
+    WORKER --> EXT1[Anthropic / Voyage / Brevo / Push]
     APP --> SENTRY2[Sentry]
     WORKER --> SENTRY2
 ```
@@ -249,7 +249,7 @@ All jobs: pg-boss, idempotent by design (keyed on natural ids + upsert semantics
 ## 11. Notification Architecture (PRD §14)
 
 - **Separation of concerns (hard rule from the prompt):** notification logic **never mutates authoritative product events** — it consumes domain events, writes only `activity`, `push_send_log`, and delivery state. Enforced by DB role: the dispatch code path runs under a role without write grants on opinion tables.
-- **Pipeline:** domain event (transactional enqueue) → eligibility filter (prefs, type toggles) → batcher (counters 4h window; co-signs daily digest; split-moved daily best-of) → priority arbiter (P0 exempt; ≤3 pushes/day via atomic check-and-insert on `push_send_log`) → channel adapters (Web Push VAPID; Resend email; Activity row always written first — Activity is the source of truth for "what was I told").
+- **Pipeline:** domain event (transactional enqueue) → eligibility filter (prefs, type toggles) → batcher (counters 4h window; co-signs daily digest; split-moved daily best-of) → priority arbiter (P0 exempt; ≤3 pushes/day via atomic check-and-insert on `push_send_log`) → channel adapters (Web Push VAPID; Brevo email — minimal payloads, no opinion content in provider metadata/tags/attributes; Activity row always written first — Activity is the source of truth for "what was I told").
 - **Dedupe:** natural keys per type (e.g., `countered:{argument_id}:{4h-bucket}`); resend-safe.
 - **Deep links:** all built from `PUBLIC_APP_URL` (D20) + stable routes; email links carry no tracking parameters beyond the notification type (no third-party click tracking — privacy posture).
 - **Timezone delivery:** `notification_pref.local_tz` (captured from browser, user-editable) drives the hourly local-time sweeps.
@@ -316,7 +316,7 @@ Assumptions: EU Supabase Pro; pipeline = ~200 ingested items/day classified (Hai
 | 100,000 MAU | ~$500–1,200 (DB compute, Vercel bandwidth/functions, email ~400k/mo ≈$200–400) | ~$300–600 (user-driven retrieval + moderation volume) | **~$1,000–2,000** |
 
 **Main cost drivers, in order of growth risk:** transactional email at scale → DB compute → Vercel bandwidth → AI (notably *flat-ish*: the editorial pipeline is a fixed daily cost — a structural advantage; user-facing AI is retrieval-only and cheap by design).
-**Cost controls (built, not aspirational):** hard daily token ceiling on the pipeline (breach → abort run → degraded day via evergreen bank — the D8 degradation policy doubles as the budget breaker); Anthropic workspace spend limit; per-actor rate limits on retrieval endpoints; Supabase/Vercel spend alerts at 2× baseline; monthly cost line in the ops report.
+**Cost controls (founder-ratified values):** **soft daily alert at $15/day** (ops alert only — the pipeline continues) · **hard daily pipeline stop at $30/day** (halts further non-essential pipeline AI calls for the day and triggers the D8 degraded-day policy — evergreen bank covers the feed) · **monthly workspace cap $500** with a pre-exhaustion operational alert at 80% ($400). The $15 soft target is **explicitly not assumed calibrated**: the implementation plan carries a cost-baselining milestone over the editorial golden set (per-stage tokens/cost, cost per candidate and per published claim, batch-discount impact, retry cost, model distribution, projected 30-day cost), and model allocation may change post-measurement without architecture change (ADR-012). Plus: per-actor rate limits on retrieval endpoints; Supabase/Vercel spend alerts at 2× baseline; monthly cost line in the ops report.
 
 ## 18. Implementation Risk Review (self-critique before finalizing)
 

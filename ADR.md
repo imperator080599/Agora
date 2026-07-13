@@ -1,6 +1,6 @@
 # ADR.md — Agora V1 Architecture Decision Records
 
-**Version:** 1.0 · 2026-07-12 · Status of all records: **Accepted** (pending founder ratification of the stack — Final Output T).
+**Version:** 1.1 · 2026-07-12 · Status: ADR-001..010 **Accepted and founder-ratified**; ADR-011..012 record the ratification amendments.
 Format: Context → Decision → Alternatives → Consequences → Migration trigger.
 
 ---
@@ -84,3 +84,19 @@ Format: Context → Decision → Alternatives → Consequences → Migration tri
 **Alternatives:** Fly.io all-in-one (fewer vendors, weaker preview/CDN story); single VPS (cheapest, highest ops risk for one person); Terraform (no payoff at three dashboards).
 **Consequences:** Deploys are boring; rollback never races schema; config drift risk accepted with a quarterly audit note; `PUBLIC_APP_URL` (D20) parameterizes every environment.
 **Migration trigger:** First external beta cohort ⇒ promote a standing staging; second engineer ⇒ revisit IaC.
+
+## ADR-011 — Transactional email: Brevo (EU), replacing Resend
+
+**Context:** Founder ratification of the stack amended the email provider: a European-operated product handling opinion-adjacent personal data should prefer EU data storage and minimize international transfer complexity. Email is the guaranteed ritual channel (with in-app Activity) given the iOS web-push constraint.
+**Decision:** Brevo (EU) for all transactional email — notification digests, weekly recaps, account/moderation mail — and as the custom SMTP for Supabase Auth (magic links must not ride Supabase's default rate-limited SMTP in production). **Payload minimization rule:** emails contain only the minimum content required for delivery; no opinion content ever enters Brevo metadata, tags, contact attributes, or analytics fields; Brevo contact records hold address + delivery state only. The email adapter enforces this via an allowlisted payload schema (same pattern as the logging allowlist).
+**Alternatives:** Resend (better DX, US processor — the replaced baseline); Postmark; SES.
+**Consequences:** One fewer US transfer in the processor inventory (remaining scrutiny: Anthropic, Voyage — SECURITY_PRIVACY §8-Q4); slightly weaker DX accepted; deliverability monitored in the ops report.
+**Migration trigger:** Deliverability or volume-pricing problems; any change re-opens only this ADR, not the vendor exercise.
+
+## ADR-012 — AI budget controls and model-routing calibration
+
+**Context:** Founder ratification set binding spend controls and rejected the assumption that the initial cost target is correctly calibrated.
+**Decision:** Three-tier control, implemented in the pipeline runner and workspace config: **$15/day soft alert** (ops alert; pipeline continues) → **$30/day hard stop** (no further non-essential pipeline AI calls that day; D8 degraded-day policy engages — evergreen bank feeds the product) → **$500/month workspace cap** with an 80% pre-exhaustion alert. Spend is computed from per-call token accounting persisted on `stage_artifact` (not inferred from invoices). A **cost-baselining milestone** runs the editorial golden set before production automation, measuring per stage: input/output tokens, cost, cost per candidate, cost per published claim, batch-discount impact, retry cost, and model distribution, projecting 30-day cost; a **MODEL ROUTING CALIBRATION checkpoint** then fixes the cheapest model per stage that passes the quality threshold (Haiku 4.5 vs Sonnet 5 vs Opus 4.8 compared empirically — Opus is not assumed). Model allocation may change from calibration without any architecture change.
+**Alternatives:** Trusting the estimate (rejected by founder decision); invoice-based monitoring only (too slow for a daily stop).
+**Consequences:** The budget breaker and the quality-degradation policy are the same mechanism (fewer claims, never worse); cost telemetry is a first-class pipeline output; the routing table is data, not architecture.
+**Migration trigger:** Sustained calibrated spend near the hard ceiling → founder decision to raise ceilings (never raised mid-incident).
