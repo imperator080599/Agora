@@ -1,8 +1,26 @@
 # VISION v2 — Agora as a Reasoning Gym
 
-**Status:** Proposed. Supersedes the strategic framing in `PRODUCT_STRATEGY.md` §1–3 and reframes (does not replace) `PRD.md`, `UX_ARCHITECTURE.md`, and `TECHNICAL_ARCHITECTURE.md`.
-**Decision required:** Yes — nine founder decisions (D21–D29) at the end.
+**Status:** Ratified in principle (2026-07-25). Supersedes the strategic framing in `PRODUCT_STRATEGY.md` §1–3 and reframes (does not replace) `PRD.md`, `UX_ARCHITECTURE.md`, and `TECHNICAL_ARCHITECTURE.md`. Companion documents: `COMPOSER_EXPERIENCE.md`, `DESIGN_V2.md`, `USER_JOURNEY.md`.
+**Decision required:** Four open items remain (D24, D26, D27, D29). Five are ratified — see §0.
 **Date:** 2026-07-25
+
+---
+
+## 0. Ratification record
+
+The founder has ratified the following, which are now binding on all downstream specification:
+
+| | Decision | Status |
+|---|---|---|
+| D21 | Agora is an AI-assisted social network that teaches reasoning. The reasoning process is the product; the debate is its consequence. | **Ratified** |
+| D22 | **The assistant coaches, never ghostwrites.** It may never generate publishable argument prose. | **Ratified — architectural** |
+| D23 | The tap path remains first-class. | **Ratified**, with the amendment in §7a |
+| D25 | Concierge test before assistant build. | **Ratified** |
+| D28 | The reasoning record and all coaching history are permanently excluded from any commercial data product; no public reasoning score will ever exist. | **Ratified**, extended in §8a |
+| — | **The Composer, not the feed, is the heart of the product.** | **New — ratified** |
+| — | The visual identity is to be rebuilt to a premium standard. See `DESIGN_V2.md`. | **New — ratified** |
+
+Open: D24 (predict-the-split), D26 (control cohort), D27 (budget ceiling), D29 (positioning language).
 
 ---
 
@@ -25,6 +43,15 @@ The original concept — IDEA → ARGUMENT → EXAMPLE — was a *production* st
 > **Agora is a gym for reasoning. The daily claim is the exercise. The AI is your coach. Other people are the match.**
 
 Not a social network with an AI feature. Not a debate site. A place where you go to get measurably better at thinking and saying what you think — and the social layer exists because that is the only thing that makes the practice real.
+
+**The product hierarchy inverts.** The old hierarchy put consumption first and treated expression as an optional extra:
+
+```
+OLD    Claim → Position → Reveal → Read the debate
+NEW    Claim → Think → Express → AI structures your reasoning → Publish → Debate → Learn
+```
+
+In the new hierarchy the debate is the *consequence* of reasoning, not the destination. Which means the centre of gravity moves off the feed and onto **the Composer** — and everything downstream of that, from information architecture to where we spend design effort, moves with it.
 
 What changes:
 
@@ -159,6 +186,20 @@ The invitation to write should appear **after** the reveal, when the user has ju
 
 ---
 
+### 7a. Reconciling "the Composer is the heart" with the two-speed product
+
+These sound contradictory. They are not, and the distinction is worth stating because it decides where design effort goes.
+
+**"The Composer is the heart" is a statement about identity, not about traffic.** It means: the Composer is what Agora *is*, what we show in a demo, where the design investment concentrates, and what a user remembers. It receives at least as much craft as the feed — per founder instruction, and per `COMPOSER_EXPERIENCE.md`.
+
+**"The tap stays first-class" is a statement about the funnel.** Most users, most days, will position and not write. Those users are not failures of the product — they are the audience that makes persuasion events possible, and without them the deep path has no feedback loop.
+
+The synthesis: **the Composer is the destination; the tap is the door.** A user should arrive wanting to express themselves, and the fastest honest route to that feeling is to commit a position first (which takes five seconds and is required by commit-before-reveal anyway) and then be invited to say *why* at the moment they most want to — immediately after discovering that 83% of people disagreed with them.
+
+The one thing we must not do is make the tap feel like the lesser choice. Guilt is not a growth strategy, and a product that makes its majority feel inadequate loses the majority.
+
+---
+
 ## 8. The assistant — capabilities and the constraints that define it
 
 ### What it does
@@ -183,6 +224,21 @@ These are not limitations. They are what makes the product a teacher instead of 
 *Why:* we are promising a "verified evidence library." A single hallucinated study, cited by a user, screenshotted, and shared, is an extinction-level credibility event for a product whose entire premise is rigour. The retrieval path must be embeddings and a database, not a language model. This is a hard architectural line, and it also happens to be much cheaper (§12).
 
 **C3 — The critique is private, always.** What the assistant told you about your reasoning is never visible to anyone else, never aggregated into a public score, never sold. See §14.
+
+### 8a. On the assistant's estimates — private mirror, never public scoreboard
+
+The ratified capability list includes estimates: persuasiveness, evidence quality, neutrality, emotional bias, logical coherence. These are genuinely valuable and they are also the single most dangerous surface in the product, so the rule is sharp:
+
+**An estimate shown to the author about their own draft is a mirror. The same estimate shown to anyone else is a scoreboard.** Mirrors teach. Scoreboards create status games, punish beginners into silence, and turn a practice space into a leaderboard for people who are already good.
+
+| Estimate | Visible to author | Visible to others | Aggregated over time |
+|---|---|---|---|
+| Persuasiveness | ✓ pre-publish, as guidance | ✗ never | ✓ private progress only |
+| Evidence quality | ✓ | ✗ | ✓ private |
+| Logical coherence | ✓ | ✗ | ✓ private |
+| Neutrality / emotional bias | ✓ | ✗ | ✓ private |
+
+Two further rules. **Estimates are directional, not numeric, in the composing surface** — "this would land harder with a source" beats "persuasiveness: 61/100", because a number invites optimisation of the number rather than of the thinking. Numbers appear only in the private progress view, where trend over months is the point. And **no estimate may block publication.** The user may always publish something the assistant scores poorly; being wrong in public is how people learn, and a product that only permits well-formed arguments will only ever hear from people who are already good at this.
 
 ### What it must not become
 
