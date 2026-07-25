@@ -1,0 +1,16 @@
+{
+  "name": "@agora/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./db": "./src/db.ts",
+    "./claims": "./src/claims.ts",
+    "./positions": "./src/positions.ts",
+    "./identity": "./src/identity.ts"
+  },
+  "dependencies": {
+    "@agora/contracts": "*",
+    "pg": "^8.13.0"
+  }
+}

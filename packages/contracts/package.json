@@ -1,0 +1,10 @@
+{
+  "name": "@agora/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./public/claim": "./src/public/claim.ts",
+    "./internal/claim": "./src/internal/claim.ts"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler",
+    "strict": true, "skipLibCheck": true, "esModuleInterop": true,
+    "resolveJsonModule": true, "jsx": "preserve", "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@agora/contracts/*": ["./packages/contracts/src/*"],
+      "@agora/domain/*": ["./packages/domain/src/*"],
+      "@agora/fixtures": ["./packages/fixtures/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", ".next", "apps/web/.next"]
+}
