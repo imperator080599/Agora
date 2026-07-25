@@ -1,0 +1,662 @@
+<title>Agora — interactive prototype</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   The app screen reproduces DESIGN.md exactly: ink on warm neutral,
+   light-mode only (ratified D18), Source Serif–class display face over
+   a system UI face. Only the surrounding studio chrome is new, and it
+   is the part that follows the viewer's theme — the product screen
+   stays light because that is what the product is.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  /* product tokens — copied from apps/web/app/globals.css */
+  --paper:#f7f4ee; --surface:#fffdf8; --ink:#201d18;
+  --ink-soft:#6b6355; --ink-faint:#99907e;
+  --line:#e6dfd1; --line-strong:#d4cab6;
+  --agree:#2f6b58; --agree-tint:#e9f1ed;
+  --disagree:#9c4a2f; --disagree-tint:#f6ebe5;
+  --complicated:#566178; --complicated-tint:#eaecf1;
+  --accent:#1f3a34; --danger:#8c2f2f;
+  --serif:"Source Serif 4",Charter,"Iowan Old Style",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+  /* studio chrome — warm-biased neutrals so the paper screen sits on them, not against them */
+  --stage:#e8e3d9; --stage-2:#dcd5c8; --stage-ink:#2c281f;
+  --stage-soft:#6d6555; --stage-line:#c9c0ae; --stage-raise:#f3efe6;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --stage:#171511; --stage-2:#100e0b; --stage-ink:#ece6d9;
+         --stage-soft:#9c9484; --stage-line:#332e25; --stage-raise:#211d17; }
+}
+:root[data-theme="dark"]{
+  --stage:#171511; --stage-2:#100e0b; --stage-ink:#ece6d9;
+  --stage-soft:#9c9484; --stage-line:#332e25; --stage-raise:#211d17;
+}
+:root[data-theme="light"]{
+  --stage:#e8e3d9; --stage-2:#dcd5c8; --stage-ink:#2c281f;
+  --stage-soft:#6d6555; --stage-line:#c9c0ae; --stage-raise:#f3efe6;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100dvh;background:var(--stage);color:var(--stage-ink);
+  font-family:var(--sans);line-height:1.5;
+  background-image:radial-gradient(120% 80% at 50% -10%,var(--stage-raise) 0%,transparent 60%);
+}
+.studio{max-width:1180px;margin-inline:auto;padding:clamp(1rem,3vw,2.25rem) 1rem 4rem;
+  display:flex;flex-direction:column;gap:1.5rem}
+
+/* ── studio header ── */
+.masthead{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;justify-content:space-between}
+.masthead h1{margin:0;font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.1rem);
+  font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.masthead p{margin:.3rem 0 0;color:var(--stage-soft);font-size:.9rem;max-width:52ch}
+.sim-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.3rem .7rem;border-radius:999px;
+  border:1px solid var(--stage-line);background:var(--stage-raise);color:var(--stage-soft);
+  font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.sim-badge::before{content:"";width:7px;height:7px;border-radius:999px;background:var(--disagree)}
+
+/* ── controls ── */
+.controls{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between}
+.segmented{display:inline-flex;background:var(--stage-raise);border:1px solid var(--stage-line);
+  border-radius:10px;padding:3px;gap:3px}
+.segmented button{appearance:none;border:0;background:transparent;color:var(--stage-soft);
+  font:600 .82rem/1 var(--sans);padding:.55rem .85rem;border-radius:7px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.4rem}
+.segmented button[aria-pressed="true"]{background:var(--stage-ink);color:var(--stage)}
+.segmented button:focus-visible{outline:2px solid var(--stage-ink);outline-offset:2px}
+.hint{color:var(--stage-soft);font-size:.8rem}
+
+/* ── device frame ── */
+.stagewrap{display:flex;justify-content:center}
+.device{
+  --w:1180px;
+  width:min(100%,var(--w));transition:width .4s cubic-bezier(.22,1,.36,1);
+  border:1px solid var(--stage-line);border-radius:18px;background:var(--paper);
+  box-shadow:0 24px 60px rgb(0 0 0 /.18);overflow:hidden
+}
+.device[data-size="phone"]{--w:390px;border-radius:30px}
+.chrome{display:flex;align-items:center;gap:.45rem;padding:.5rem .8rem;
+  background:var(--stage-raise);border-bottom:1px solid var(--stage-line)}
+.dot{width:9px;height:9px;border-radius:999px;background:var(--stage-line)}
+.urlbar{flex:1;text-align:center;font-size:.7rem;color:var(--stage-soft);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.device[data-size="phone"] .chrome{display:none}
+.notch{display:none}
+.device[data-size="phone"] .notch{display:block;height:26px;background:var(--paper);
+  position:relative}
+.device[data-size="phone"] .notch::after{content:"";position:absolute;top:7px;left:50%;
+  transform:translateX(-50%);width:92px;height:5px;border-radius:999px;background:var(--line-strong)}
+
+/* ═══ the product screen (container-queried: real breakpoints, live) ═══ */
+.app{container:app / inline-size;background:var(--paper);color:var(--ink);
+  min-height:600px;display:flex;flex-direction:column}
+.device[data-size="phone"] .app{min-height:720px}
+.app a{color:inherit}
+.app-header{border-bottom:1px solid var(--line);padding:.85rem 1rem;
+  display:flex;align-items:baseline;justify-content:space-between}
+.wordmark{font-family:var(--serif);font-size:1.35rem;font-weight:700;letter-spacing:.04em;
+  text-decoration:none;background:none;border:0;padding:0;cursor:pointer;color:var(--ink)}
+.app-date{font-size:.8rem;color:var(--ink-soft)}
+.app-main{flex:1;padding:1.25rem 1rem 2.5rem}
+.shell{max-width:42.5rem;margin-inline:auto}
+@container app (min-width:1120px){ .shell.wide{max-width:60rem} }
+
+.kicker{margin:1.6rem 0 .6rem;font-size:.72rem;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-faint)}
+.kicker:first-child{margin-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .6rem}
+.chip{display:inline-block;padding:.15rem .6rem;border-radius:999px;font-size:.72rem;
+  font-weight:600;letter-spacing:.05em;border:1px solid var(--line-strong);
+  color:var(--ink-soft);background:var(--surface)}
+.chip.flagship{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.stance-pill{display:inline-block;padding:.2rem .65rem;border-radius:999px;font-size:.78rem;font-weight:650}
+.stance-pill.agree{background:var(--agree-tint);color:var(--agree)}
+.stance-pill.disagree{background:var(--disagree-tint);color:var(--disagree)}
+.stance-pill.complicated{background:var(--complicated-tint);color:var(--complicated)}
+
+.card{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:1.15rem;cursor:pointer;font:inherit;color:inherit;
+  transition:border-color .12s ease,transform .12s ease}
+.card:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+.card:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.hero-sentence{margin:0 0 .9rem;font-family:var(--serif);font-weight:700;line-height:1.18;
+  font-size:clamp(1.5rem,5.2cqw,2.3rem);text-wrap:balance}
+.feed-sentence{margin:0 0 .8rem;font-family:var(--serif);font-weight:600;line-height:1.3;
+  font-size:1.2rem;text-wrap:balance}
+.grid{display:grid;grid-template-columns:1fr;gap:.85rem}
+@container app (min-width:1120px){ .grid{grid-template-columns:1fr 1fr} }
+.meta{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:0;
+  font-size:.82rem;color:var(--ink-soft)}
+.meta .cta{flex-shrink:0;font-weight:600;color:var(--accent)}
+
+.claim-sentence{margin:0;font-family:var(--serif);font-weight:700;line-height:1.15;
+  font-size:clamp(1.65rem,6.4cqw,2.6rem);text-wrap:balance}
+.backlink{appearance:none;border:0;background:none;padding:0;margin:0 0 1rem;cursor:pointer;
+  color:var(--ink-soft);font:600 .8rem var(--sans)}
+.backlink:hover{color:var(--ink)}
+.ctx{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.ctx li{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:.75rem .9rem}
+.ctx p{margin:0;font-size:.95rem}
+.src{margin-top:.35rem;font-size:.78rem;color:var(--ink-soft)}
+.src span{margin-right:.6rem;text-decoration:underline;text-decoration-color:var(--line-strong)}
+.teaser{margin:0 0 .6rem;padding:.75rem .95rem;border-radius:8px;font-family:var(--serif);
+  font-size:.98rem;font-style:italic;color:var(--ink-soft);background:var(--surface);
+  border:1px solid var(--line);border-left-width:3px}
+.teaser.for{border-left-color:var(--agree)} .teaser.against{border-left-color:var(--disagree)}
+
+.position-card{margin-top:2rem;background:var(--surface);border:1px solid var(--line-strong);
+  border-radius:14px;padding:1.1rem}
+.position-card h2{margin:0 0 .35rem;font-family:var(--serif);font-size:1.25rem}
+.position-hint{margin:0 0 .9rem;font-size:.85rem;color:var(--ink-soft)}
+.stance-row{display:grid;grid-template-columns:1fr;gap:.55rem}
+@container app (min-width:768px){
+  .stance-row{grid-template-columns:repeat(3,1fr)}
+  .stance-row.two{grid-template-columns:repeat(2,1fr)}
+}
+.stance-btn{appearance:none;width:100%;padding:.8rem 1rem;border-radius:8px;border:1.5px solid;
+  background:var(--surface);font:650 1rem var(--sans);cursor:pointer;
+  transition:background .12s ease,color .12s ease}
+.stance-btn.agree{border-color:var(--agree);color:var(--agree)}
+.stance-btn.agree:hover,.stance-btn.agree:focus-visible{background:var(--agree);color:var(--paper)}
+.stance-btn.disagree{border-color:var(--disagree);color:var(--disagree)}
+.stance-btn.disagree:hover,.stance-btn.disagree:focus-visible{background:var(--disagree);color:var(--paper)}
+.stance-btn.complicated{border-color:var(--complicated);color:var(--complicated)}
+.stance-btn.complicated:hover,.stance-btn.complicated:focus-visible{background:var(--complicated);color:var(--paper)}
+.stance-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.split{margin-top:1.1rem;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:1rem 1.1rem 1.1rem}
+.split-kicker{margin:0 0 .7rem;font-size:.8rem;color:var(--ink-soft)}
+.bar{display:flex;height:14px;border-radius:999px;overflow:hidden;background:var(--line);
+  animation:wipe .6s cubic-bezier(.22,1,.36,1) both}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.seg{height:100%}
+.seg.agree{background:var(--agree)} .seg.disagree{background:var(--disagree)}
+.seg.complicated{background:var(--complicated)}
+.legend{list-style:none;margin:.8rem 0 0;padding:0;display:grid;gap:.35rem}
+.legend li{display:flex;align-items:baseline;gap:.5rem;font-size:.9rem}
+.legend li.you{font-weight:650}
+.dot-s{width:10px;height:10px;border-radius:999px;flex-shrink:0;align-self:center}
+.dot-s.agree{background:var(--agree)} .dot-s.disagree{background:var(--disagree)}
+.dot-s.complicated{background:var(--complicated)}
+.legend .lbl{color:var(--ink-soft)}
+.legend .val{margin-left:auto;font-variant-numeric:tabular-nums}
+.you-tag{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+
+.debate{display:grid;grid-template-columns:1fr;gap:1rem}
+@container app (min-width:768px){ .debate{grid-template-columns:1fr 1fr} }
+.debate h3{margin:0 0 .5rem;font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.debate h3.for{color:var(--agree)} .debate h3.against{color:var(--disagree)}
+.arg{margin:0 0 .6rem;background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;padding:.75rem .9rem}
+.arg p{margin:0 0 .4rem;font-size:.93rem}
+.arg .attr{font-size:.75rem;color:var(--ink-faint)}
+.arg.mine{border-color:var(--accent);border-left:3px solid var(--accent)}
+
+/* ── v2 composer ── */
+.steps{display:flex;gap:.4rem;margin:0 0 1rem;padding:0;list-style:none;flex-wrap:wrap}
+.steps li{display:flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+.steps li[data-on="true"]{color:var(--accent)}
+.steps li[data-done="true"]{color:var(--agree)}
+.steps li+li::before{content:"→";margin-right:.15rem;color:var(--line-strong)}
+.composer{display:grid;grid-template-columns:1fr;gap:1rem}
+@container app (min-width:1120px){ .composer{grid-template-columns:1.15fr .85fr;align-items:start} }
+.field{background:var(--surface);border:1px solid var(--line-strong);border-radius:14px;padding:1.1rem}
+.field label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:.35rem}
+.field .prompt{margin:0 0 .8rem;font-family:var(--serif);font-size:1.1rem;line-height:1.3}
+.field textarea{width:100%;min-height:104px;resize:vertical;padding:.7rem .8rem;border-radius:8px;
+  border:1px solid var(--line-strong);background:var(--paper);color:var(--ink);
+  font:1rem/1.5 var(--sans)}
+.field textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.counter{margin:.4rem 0 0;font-size:.75rem;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.rowbtns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem}
+.btn{appearance:none;padding:.6rem .95rem;border-radius:8px;border:1.5px solid var(--accent);
+  background:var(--accent);color:var(--paper);font:650 .9rem var(--sans);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.coach{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem 1.1rem;
+  position:relative}
+.coach::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;border-radius:14px 0 0 14px;
+  background:linear-gradient(var(--accent),var(--complicated))}
+.coach h4{margin:0 0 .1rem;font-size:.72rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-faint)}
+.coach .rule{margin:0 0 .9rem;font-size:.74rem;color:var(--ink-faint);font-style:italic}
+.note{margin:0 0 .7rem;padding:.7rem .85rem;border-radius:8px;background:var(--paper);
+  border:1px solid var(--line);font-size:.9rem;animation:rise .3s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.note .tag{display:inline-block;font-size:.66rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:.3rem}
+.note.probe .tag{color:var(--complicated)}
+.note.flag .tag{color:var(--disagree)}
+.note.good .tag{color:var(--agree)}
+.note.evidence .tag{color:var(--accent)}
+.note p{margin:0;line-height:1.45}
+.evlist{list-style:none;margin:.2rem 0 0;padding:0;display:grid;gap:.45rem}
+.evlist button{width:100%;text-align:left;background:var(--paper);border:1px solid var(--line);
+  border-radius:8px;padding:.6rem .75rem;cursor:pointer;font:inherit;color:inherit}
+.evlist button:hover{border-color:var(--accent)}
+.evlist .pub{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.evlist .ttl{font-size:.86rem}
+.picked{display:flex;gap:.5rem;align-items:flex-start;background:var(--agree-tint);
+  border:1px solid var(--agree);border-radius:8px;padding:.6rem .75rem;font-size:.86rem;margin-top:.6rem}
+.nudge{font-size:.8rem;color:var(--ink-soft);margin:.8rem 0 0}
+.published{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1.1rem;margin-top:1rem}
+.published .idea{font-family:var(--serif);font-size:1.15rem;margin:0 0 .5rem;line-height:1.3}
+.published .body{margin:0 0 .6rem;font-size:.95rem}
+.moved{display:flex;align-items:center;gap:.5rem;margin-top:.9rem;padding:.6rem .8rem;
+  border-radius:8px;background:var(--agree-tint);color:var(--agree);font-size:.86rem;font-weight:600}
+.noev{background:var(--disagree-tint);color:var(--disagree);border-radius:6px;padding:.15rem .5rem;
+  font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+
+/* ── caption under the stage ── */
+.legendbar{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;color:var(--stage-soft);font-size:.8rem}
+.legendbar b{color:var(--stage-ink);font-weight:650}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+
+<div class="studio">
+  <header class="masthead">
+    <div>
+      <h1>Agora — interactive prototype</h1>
+      <p>Click through the product as it stands today, then switch to the proposed v2 loop to feel what asking people to <em>write</em> actually costs them.</p>
+    </div>
+    <span class="sim-badge">Prototype · canned data</span>
+  </header>
+
+  <div class="controls">
+    <div class="segmented" role="group" aria-label="Product version">
+      <button id="m-shipped" aria-pressed="true">Shipped today</button>
+      <button id="m-v2" aria-pressed="false">Proposed v2</button>
+    </div>
+    <div class="segmented" role="group" aria-label="Viewport">
+      <button id="d-laptop" aria-pressed="true">Laptop</button>
+      <button id="d-phone" aria-pressed="false">Phone</button>
+    </div>
+  </div>
+
+  <div class="stagewrap">
+    <div class="device" id="device" data-size="laptop">
+      <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="urlbar" id="urlbar">agora.example/</span></div>
+      <div class="notch"></div>
+      <div class="app" id="app"></div>
+    </div>
+  </div>
+
+  <div class="legendbar">
+    <span><b>Real breakpoints.</b> The screen re-lays out at 768px and 1120px, same as the code.</span>
+    <span><b>Light only.</b> The product is light-mode by decision D18; the surround follows your theme.</span>
+    <span><b>Simulated.</b> The v2 assistant uses scripted responses, not a live model.</span>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const CLAIMS = [
+  { slug:"four-day-week-rich-economies", flagship:true, domain:"Economics",
+    sentence:"The 4-day work week is a luxury of rich economies.",
+    split:{agree:83,disagree:11,complicated:6},
+    bullets:[
+      {t:"Iceland ran trials from 2015 to 2019 covering roughly 1% of its workforce.",s:"Reuters"},
+      {t:"Belgium legalised a compressed four-day week in 2022.",s:"Financial Times"},
+      {t:"In a UK pilot, 56 of 61 participating firms continued the schedule.",s:"The Economist"}],
+    for:[{a:"The Economist, editorial, 2026",t:"Productivity gains appear mainly in service sectors that rich economies dominate; manufacturing-heavy economies cannot compress output hours without losing throughput."},
+         {a:"Financial Times, opinion, 2026",t:"Shorter weeks assume slack in knowledge work that subsistence and industrial labour markets simply do not have."}],
+    against:[{a:"Reuters analysis, 2026",t:"Middle-income economies adopted the 40-hour week when they were far poorer than today's candidates for a 32-hour one; norms follow bargaining power, not GDP."},
+             {a:"Nikkei Asia, 2026",t:"Trials in mixed-income regions show absenteeism and turnover savings that offset most of the direct cost, independent of national income."}] },
+  { slug:"eu-ai-act-startups", domain:"Tech & AI",
+    sentence:"The EU AI Act will push AI startups out of Europe.",
+    split:{agree:19,disagree:24,complicated:9},
+    bullets:[{t:"The Act's general-purpose AI obligations began applying in stages from 2025.",s:"Reuters"},
+             {t:"Several European AI firms have opened US entities in the past year.",s:"Financial Times"}],
+    for:[{a:"Ars Technica, 2026",t:"Compliance costs are fixed; they weigh most on the small labs the ecosystem needs, while incumbents absorb them as overhead."}],
+    against:[{a:"The Economist, 2026",t:"Regulatory certainty is itself a location advantage: rules you can read beat rules improvised in litigation."}] },
+  { slug:"chip-subsidies-national-security", domain:"Geopolitics",
+    sentence:"Chip subsidies are national security spending, not industrial policy.",
+    split:{agree:31,disagree:12,complicated:14},
+    bullets:[{t:"Multiple governments now subsidise domestic semiconductor fabrication at record levels.",s:"Nikkei Asia"}],
+    for:[{a:"Nikkei Asia, 2026",t:"A single strait carries most advanced logic capacity; redundancy pricing belongs in defence budgets, not commercial ROI models."}],
+    against:[{a:"Financial Times, 2026",t:"Labelling subsidies as security removes the cost-benefit discipline that keeps them from becoming permanent corporate welfare."}] },
+  { slug:"nuclear-decarbonization-path", domain:"Economics",
+    sentence:"Nuclear power is the most realistic path to decarbonization.",
+    split:{agree:12,disagree:7,complicated:4},
+    bullets:[{t:"Grid-scale storage costs have fallen but remain the binding constraint on renewable baseload.",s:"The Economist"}],
+    for:[{a:"The Economist, 2026",t:"Every grid that decarbonised fast did it with hydro or nuclear; none has yet done it with wind and solar alone."}],
+    against:[{a:"Reuters analysis, 2026",t:"New nuclear's cost curve bends up while solar-plus-storage bends down; realism favours the curve that improves."}] },
+  { slug:"remote-work-innovation", domain:"Business",
+    sentence:"Remote work reduces innovation.",
+    split:{agree:9,disagree:5,complicated:3},
+    bullets:[{t:"Patent-citation studies since 2020 disagree on the effect of distributed teams on breakthrough work.",s:"Ars Technica"}],
+    for:[{a:"Financial Times, 2026",t:"Breakthroughs correlate with unplanned high-bandwidth collisions, which scheduling software does not reproduce."}],
+    against:[{a:"Ars Technica, 2026",t:"Distributed teams widen the talent pool more than they narrow serendipity; the biggest innovation input is who you can hire."}] },
+];
+
+const EVIDENCE = {
+  "four-day-week-rich-economies":[
+    {pub:"Autonomy / Icelandic government",ttl:"Going Public: Iceland's journey to a shorter working week (2021)",note:"2,500 workers; productivity maintained or improved."},
+    {pub:"4 Day Week Global",ttl:"UK pilot results: 61 firms, six months (2023)",note:"56 of 61 firms continued; revenue broadly flat."},
+    {pub:"ILO",ttl:"Working Time and Work-Life Balance Around the World (2022)",note:"Hours fell fastest in middle-income economies, not the richest."},
+  ]
+};
+const STANCE_LABEL={agree:"Agree",disagree:"Disagree",complicated:"It’s complicated"};
+const THRESHOLD=25;
+
+const state={mode:"shipped",size:"laptop",route:"feed",slug:null,
+  positions:{},v2:{step:1,idea:"",argument:"",evidence:null,noEvidence:false,published:false,notes:[]}};
+
+const app=document.getElementById("app");
+const device=document.getElementById("device");
+const urlbar=document.getElementById("urlbar");
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const claim=slug=>CLAIMS.find(c=>c.slug===slug);
+
+function splitWithYou(c){
+  const s={...c.split}, mine=state.positions[c.slug];
+  if(mine) s[mine]=s[mine]+1;
+  return s;
+}
+function pct(s){
+  const total=s.agree+s.disagree+s.complicated;
+  const raw=[s.agree,s.disagree,s.complicated].map(n=>n*100/total);
+  const fl=raw.map(Math.floor); let rem=100-fl.reduce((a,b)=>a+b,0);
+  raw.map((v,i)=>({i,f:v-fl[i]})).sort((a,b)=>b.f-a.f||a.i-b.i)
+     .forEach(({i})=>{ if(rem>0){fl[i]++;rem--;} });
+  return {total,agree:fl[0],disagree:fl[1],complicated:fl[2]};
+}
+
+/* ── views ── */
+function feedView(){
+  const flag=CLAIMS.find(c=>c.flagship), rest=CLAIMS.filter(c=>c!==flag);
+  const line=c=>{
+    const mine=state.positions[c.slug];
+    const total=c.split.agree+c.split.disagree+c.split.complicated+(mine?1:0);
+    return mine
+      ? `<p class="meta"><span class="stance-pill ${mine}">You: ${STANCE_LABEL[mine]}</span><span class="cta">See the split →</span></p>`
+      : `<p class="meta"><span>${total} people have taken a position</span><span class="cta">Where do you stand? →</span></p>`;
+  };
+  return `<div class="shell wide">
+    <p class="kicker">Today’s claim</p>
+    <button class="card" data-go="${flag.slug}">
+      <p class="chips"><span class="chip">${flag.domain}</span></p>
+      <h1 class="hero-sentence">${esc(flag.sentence)}</h1>${line(flag)}
+    </button>
+    <p class="kicker">Also live</p>
+    <div class="grid">${rest.map(c=>`
+      <button class="card" data-go="${c.slug}">
+        <p class="chips"><span class="chip">${c.domain}</span></p>
+        <h2 class="feed-sentence">${esc(c.sentence)}</h2>${line(c)}
+      </button>`).join("")}</div>
+  </div>`;
+}
+
+const ctxHtml=c=>`<p class="kicker">What’s established</p>
+  <ul class="ctx">${c.bullets.map(b=>`<li><p>${esc(b.t)}</p><p class="src"><span>${esc(b.s)}</span></p></li>`).join("")}</ul>`;
+
+function claimPre(c){
+  const total=c.split.agree+c.split.disagree+c.split.complicated;
+  return `<div class="shell">
+    <button class="backlink" data-back="1">← Today</button>
+    <p class="chips"><span class="chip">${c.domain}</span>${c.flagship?'<span class="chip flagship">Today’s claim</span>':""}</p>
+    <h1 class="claim-sentence">${esc(c.sentence)}</h1>
+    ${ctxHtml(c)}
+    <p class="kicker">A taste of the debate</p>
+    <blockquote class="teaser for">${esc(c.for[0].t)}</blockquote>
+    <blockquote class="teaser against">${esc(c.against[0].t)}</blockquote>
+    <section class="position-card">
+      <h2>Where do you stand?</h2>
+      <p class="position-hint">${total} people have already positioned. The split reveals only after you commit.</p>
+      <div class="stance-row">
+        ${["agree","disagree","complicated"].map(s=>`<button class="stance-btn ${s}" data-take="${s}">${STANCE_LABEL[s]}</button>`).join("")}
+      </div>
+    </section>
+  </div>`;
+}
+
+function splitPanel(c){
+  const s=splitWithYou(c), mine=state.positions[c.slug];
+  const total=s.agree+s.disagree+s.complicated;
+  if(total<THRESHOLD){
+    return `<section class="split">
+      <p class="split-kicker">Early debate · ${total} positions so far</p>
+      <ul class="legend">${["agree","disagree","complicated"].map(k=>`
+        <li class="${k===mine?"you":""}"><span class="dot-s ${k}"></span>
+        <span class="lbl">${STANCE_LABEL[k]}</span><span class="val">${s[k]}</span>
+        ${k===mine?'<span class="you-tag">you</span>':""}</li>`).join("")}</ul>
+    </section>`;
+  }
+  const p=pct(s);
+  return `<section class="split">
+    <p class="split-kicker">${p.total} people have taken a position</p>
+    <div class="bar">${["agree","disagree","complicated"].map(k=>p[k]>0?`<span class="seg ${k}" style="width:${p[k]}%"></span>`:"").join("")}</div>
+    <ul class="legend">${["agree","disagree","complicated"].map(k=>`
+      <li class="${k===mine?"you":""}"><span class="dot-s ${k}"></span>
+      <span class="lbl">${STANCE_LABEL[k]}</span><span class="val">${p[k]}%</span>
+      ${k===mine?'<span class="you-tag">you</span>':""}</li>`).join("")}</ul>
+  </section>`;
+}
+
+function debateHtml(c,extra=""){
+  return `<p class="kicker">The debate</p>
+  <div class="debate">
+    <div><h3 class="for">For</h3>${extra}${c.for.map(a=>`<blockquote class="arg"><p>${esc(a.t)}</p><footer class="attr">${esc(a.a)}</footer></blockquote>`).join("")}</div>
+    <div><h3 class="against">Against</h3>${c.against.map(a=>`<blockquote class="arg"><p>${esc(a.t)}</p><footer class="attr">${esc(a.a)}</footer></blockquote>`).join("")}</div>
+  </div>`;
+}
+
+function claimPost(c){
+  const mine=state.positions[c.slug];
+  const others=["agree","disagree","complicated"].filter(s=>s!==mine);
+  return `<div class="shell">
+    <button class="backlink" data-back="1">← Today</button>
+    <p class="chips"><span class="chip">${c.domain}</span>${c.flagship?'<span class="chip flagship">Today’s claim</span>':""}</p>
+    <h1 class="claim-sentence">${esc(c.sentence)}</h1>
+    <p style="margin:1.1rem 0 0"><span class="stance-pill ${mine}">You: ${STANCE_LABEL[mine]}</span></p>
+    ${splitPanel(c)}
+    ${ctxHtml(c)}
+    ${debateHtml(c)}
+    <section class="position-card">
+      <h2>Changed your mind?</h2>
+      <div class="stance-row two">
+        ${others.map(s=>`<button class="stance-btn ${s}" data-take="${s}">${STANCE_LABEL[s]}</button>`).join("")}
+      </div>
+    </section>
+  </div>`;
+}
+
+/* ── v2: the composer ── */
+function coachNotes(){
+  const v=state.v2, out=[];
+  const words=t=>t.trim()?t.trim().split(/\s+/).length:0;
+
+  if(v.step===1){
+    const t=v.idea.toLowerCase();
+    if(!v.idea.trim()){
+      out.push(["probe","Start here","One sentence. Not whether the claim is true — what <em>you</em> think is actually going on."]);
+    } else if(t.includes("luxury")&&t.includes("rich")){
+      out.push(["flag","You’ve restated the claim","Those are the claim’s own words. What is the underlying reason you hold this view?"]);
+    } else if(words(v.idea)<6){
+      out.push(["probe","Go one level deeper","Too compressed to disagree with. What would someone have to believe to think you’re wrong?"]);
+    } else {
+      out.push(["good","That’s a position","It says something the claim doesn’t. Now give the mechanism behind it."]);
+    }
+  }
+  if(v.step===2){
+    const t=v.argument.toLowerCase(), w=words(v.argument);
+    if(!v.argument.trim()){
+      out.push(["probe","Why is that true?","Describe the mechanism — the chain of cause and effect, not the conclusion again."]);
+    } else {
+      if(/everyone|nobody|always|never|obviously/.test(t))
+        out.push(["flag","Overreach","“"+(t.match(/everyone|nobody|always|never|obviously/)||[""])[0]+"” is doing a lot of work here. A single counterexample sinks it. Would a narrower claim still support your idea?"]);
+      if(/rich|poor|gdp|income/.test(t)&&!/because|since|which means|so that|leads to/.test(t))
+        out.push(["probe","Correlation or cause?","You’ve paired wealth with the outcome. What’s the mechanism that makes one produce the other?"]);
+      if(w>=25)
+        out.push(["good","The chain is legible","A reader can now say where they get off. That’s what makes it arguable."]);
+      out.push(["probe","The strongest objection","Someone will say norms follow bargaining power, not national income. What’s your answer?"]);
+    }
+  }
+  if(v.step===3){
+    out.push(["evidence","Verified library","Three sources touch your mechanism. Pick the one that would move a skeptic — not the one that agrees with you loudest."]);
+  }
+  return out;
+}
+
+function composerView(c){
+  const v=state.v2;
+  if(v.published) return publishedView(c);
+  const notes=coachNotes();
+  const stepDef=[
+    {n:1,k:"Idea",prompt:"In one sentence — what do you actually think?",field:"idea",
+     ph:"The binding constraint isn’t national income, it’s…"},
+    {n:2,k:"Argument",prompt:"Why? Give the mechanism, not the conclusion.",field:"argument",
+     ph:"Because output per hour in services depends on…"},
+    {n:3,k:"Evidence",prompt:"What would make a skeptic take this seriously?",field:null,ph:""},
+  ];
+  const cur=stepDef[v.step-1];
+  const ev=EVIDENCE[c.slug]||[];
+  const canNext = v.step===1 ? v.idea.trim().length>12
+                : v.step===2 ? v.argument.trim().length>40
+                : (v.evidence!==null||v.noEvidence);
+
+  const fieldHtml = cur.field ? `
+    <div class="field">
+      <label>Step ${v.step} · ${cur.k}</label>
+      <p class="prompt">${cur.prompt}</p>
+      <textarea id="ta" placeholder="${cur.ph}">${esc(v[cur.field])}</textarea>
+      <p class="counter">${v[cur.field].trim()?v[cur.field].trim().split(/\s+/).length:0} words</p>
+      <div class="rowbtns">
+        ${v.step>1?'<button class="btn ghost" data-step="back">Back</button>':""}
+        <button class="btn" data-step="next" ${canNext?"":"disabled"}>Continue</button>
+      </div>
+    </div>`
+  : `<div class="field">
+      <label>Step 3 · Evidence</label>
+      <p class="prompt">${cur.prompt}</p>
+      <ul class="evlist">${ev.map((e,i)=>`
+        <li><button data-ev="${i}"><span class="pub">${esc(e.pub)}</span><br>
+        <span class="ttl">${esc(e.ttl)}</span></button></li>`).join("")}</ul>
+      ${v.evidence!==null&&ev[v.evidence]?`<div class="picked"><span>✓</span><div><b>${esc(ev[v.evidence].pub)}</b> — ${esc(ev[v.evidence].note)}</div></div>`:""}
+      <p class="nudge">No source fits? <button class="btn ghost" data-ev="none" style="padding:.3rem .6rem">Publish without evidence</button> — it will be labelled.</p>
+      <div class="rowbtns">
+        <button class="btn ghost" data-step="back">Back</button>
+        <button class="btn" data-step="publish" ${canNext?"":"disabled"}>Publish</button>
+      </div>
+    </div>`;
+
+  return `<div class="shell wide">
+    <button class="backlink" data-back="1">← Today</button>
+    <p class="chips"><span class="chip">${c.domain}</span><span class="chip flagship">Today’s claim</span></p>
+    <h1 class="claim-sentence" style="font-size:clamp(1.3rem,4.4cqw,1.9rem)">${esc(c.sentence)}</h1>
+    <p style="margin:.9rem 0 1.2rem"><span class="stance-pill ${state.positions[c.slug]}">You: ${STANCE_LABEL[state.positions[c.slug]]}</span></p>
+    <ul class="steps">${stepDef.map(s=>`<li data-on="${s.n===v.step}" data-done="${s.n<v.step}">${s.k}</li>`).join("")}</ul>
+    <div class="composer">
+      ${fieldHtml}
+      <aside class="coach">
+        <h4>Reasoning assistant</h4>
+        <p class="rule">Asks questions and finds sources. Never writes your argument for you.</p>
+        ${notes.map(([k,tag,body])=>`<div class="note ${k}"><span class="tag">${tag}</span><p>${body}</p></div>`).join("")}
+      </aside>
+    </div>
+  </div>`;
+}
+
+function publishedView(c){
+  const v=state.v2, ev=(EVIDENCE[c.slug]||[])[v.evidence];
+  const mineArg=`<blockquote class="arg mine">
+      <p>${esc(v.argument)}</p>
+      <footer class="attr">You · just now ${ev?"· "+esc(ev.pub):' · <span class="noev">no evidence</span>'}</footer>
+    </blockquote>`;
+  return `<div class="shell">
+    <button class="backlink" data-back="1">← Today</button>
+    <p class="chips"><span class="chip">${c.domain}</span></p>
+    <h1 class="claim-sentence" style="font-size:clamp(1.3rem,4.4cqw,1.9rem)">${esc(c.sentence)}</h1>
+    <section class="published">
+      <p class="chips"><span class="chip">Your reasoning</span></p>
+      <p class="idea">${esc(v.idea)}</p>
+      <p class="body">${esc(v.argument)}</p>
+      ${ev?`<div class="picked"><span>✓</span><div><b>${esc(ev.pub)}</b> — ${esc(ev.ttl)}</div></div>`
+          :`<p><span class="noev">Published without evidence</span></p>`}
+      <div class="moved">◆ 2 people marked this as having moved them.</div>
+    </section>
+    ${splitPanel(c)}
+    ${debateHtml(c,mineArg)}
+  </div>`;
+}
+
+/* ── render + events ── */
+function render(){
+  const c=state.slug?claim(state.slug):null;
+  let body;
+  if(state.route==="feed"){ body=feedView(); urlbar.textContent="agora.example/"; }
+  else if(!state.positions[c.slug]){ body=claimPre(c); urlbar.textContent="agora.example/c/"+c.slug; }
+  else if(state.mode==="v2"&&c.flagship){ body=composerView(c); urlbar.textContent="agora.example/c/"+c.slug+"/write"; }
+  else { body=claimPost(c); urlbar.textContent="agora.example/c/"+c.slug; }
+
+  app.innerHTML=`<header class="app-header"><button class="wordmark" data-back="1">Agora</button>
+    <span class="app-date">Saturday 25 July</span></header><main class="app-main">${body}</main>`;
+
+  const ta=document.getElementById("ta");
+  if(ta){
+    ta.addEventListener("input",()=>{
+      state.v2[state.v2.step===1?"idea":"argument"]=ta.value;
+      const notes=coachNotes();
+      const aside=app.querySelector(".coach");
+      aside.innerHTML=`<h4>Reasoning assistant</h4>
+        <p class="rule">Asks questions and finds sources. Never writes your argument for you.</p>
+        ${notes.map(([k,tag,b])=>`<div class="note ${k}"><span class="tag">${tag}</span><p>${b}</p></div>`).join("")}`;
+      const counter=app.querySelector(".counter");
+      if(counter) counter.textContent=(ta.value.trim()?ta.value.trim().split(/\s+/).length:0)+" words";
+      const next=app.querySelector('[data-step="next"]');
+      if(next) next.disabled = state.v2.step===1 ? ta.value.trim().length<=12 : ta.value.trim().length<=40;
+    });
+  }
+}
+
+app.addEventListener("click",e=>{
+  const t=e.target.closest("[data-go],[data-back],[data-take],[data-step],[data-ev]");
+  if(!t) return;
+  if(t.dataset.go){ state.slug=t.dataset.go; state.route="claim"; }
+  else if(t.dataset.back){ state.route="feed"; state.slug=null; }
+  else if(t.dataset.take){
+    state.positions[state.slug]=t.dataset.take;
+    if(state.mode==="v2"&&claim(state.slug).flagship)
+      state.v2={step:1,idea:"",argument:"",evidence:null,noEvidence:false,published:false};
+  }
+  else if(t.dataset.ev!==undefined){
+    if(t.dataset.ev==="none"){ state.v2.noEvidence=true; state.v2.evidence=null; }
+    else { state.v2.evidence=Number(t.dataset.ev); state.v2.noEvidence=false; }
+  }
+  else if(t.dataset.step){
+    const s=t.dataset.step;
+    if(s==="next") state.v2.step=Math.min(3,state.v2.step+1);
+    if(s==="back") state.v2.step=Math.max(1,state.v2.step-1);
+    if(s==="publish") state.v2.published=true;
+  }
+  render();
+});
+
+function setMode(m){
+  state.mode=m;
+  document.getElementById("m-shipped").setAttribute("aria-pressed",String(m==="shipped"));
+  document.getElementById("m-v2").setAttribute("aria-pressed",String(m==="v2"));
+  state.route="feed"; state.slug=null; state.positions={};
+  state.v2={step:1,idea:"",argument:"",evidence:null,noEvidence:false,published:false};
+  render();
+}
+function setSize(s){
+  state.size=s; device.dataset.size=s;
+  document.getElementById("d-laptop").setAttribute("aria-pressed",String(s==="laptop"));
+  document.getElementById("d-phone").setAttribute("aria-pressed",String(s==="phone"));
+}
+document.getElementById("m-shipped").onclick=()=>setMode("shipped");
+document.getElementById("m-v2").onclick=()=>setMode("v2");
+document.getElementById("d-laptop").onclick=()=>setSize("laptop");
+document.getElementById("d-phone").onclick=()=>setSize("phone");
+
+render();
+</script>
