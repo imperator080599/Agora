@@ -1,0 +1,276 @@
+# EVIDENCE GRAPH — Retrieval That Reasons
+
+**Status:** Proposed. Replaces the evidence library described in `COMPOSER_EXPERIENCE.md` §2 step ③.
+**Governing constraint:** C2 — evidence is retrieved, never generated.
+**Date:** 2026-07-25
+
+---
+
+## 1. Why the current system is the weakest part of the product
+
+It is a keyword search over a document list. That fails for a reason worth stating precisely, because the reason contains the design.
+
+When a user writes *"remote work reduces innovation because spontaneous interactions disappear"*, the words that matter — **Bell Labs, Building 20, the Pixar atrium, weak ties, open-plan studies** — do not appear anywhere in what they typed. No amount of semantic similarity on the raw sentence reliably surfaces Bell Labs, because the sentence and the Bell Labs literature share almost no surface vocabulary.
+
+What they share is a **mechanism**: *unplanned co-location encounters between people with different knowledge produce novel combinations*.
+
+> **The unit of matching is not the text. It is the mechanism.**
+>
+> The user states a causal story. Somewhere in the world, dozens of cases, studies, and natural experiments bear on that same causal story — supporting it, undermining it, or bounding it. Retrieval's job is to find the mechanism, then walk to everything attached to it.
+
+That single reframing is the difference between a search box and the asset the brief is asking for. Two further changes follow from it.
+
+**Documents are the wrong unit of storage.** A paper is not evidence. A *finding* is. One paper may contain three findings, two of which cut against each other. Store findings.
+
+**Confirmation-only retrieval is a defect, not a feature.** A system that returns only what supports you is a bias amplifier with a citation button. Every retrieval must return what undermines you too.
+
+---
+
+## 2. Object model
+
+### The Atom — the unit of evidence
+
+An **Evidence Atom** is one checkable claim-about-the-world, with provenance.
+
+```
+ATOM  atm_7f3a
+  statement   "In a UK trial of 61 firms on a four-day week, 56 continued
+               the schedule after six months; revenue was broadly flat."
+  kind        empirical_finding
+  source      src_0912  (4 Day Week Global, 2023)
+  quote_span  chars 4,102–4,398          ← verbatim, in the source
+  url         https://…                   ← resolvable, archived
+  entities    [UK, 4 Day Week Global]
+  scope       {geography: UK, period: 2022–23, population: 61 SMEs}
+  strength    B  (see §5)
+  contested   false
+  verified_by curator_04 · 2026-05-02
+```
+
+**Atom kinds:** `empirical_finding` · `historical_case` · `natural_experiment` · `legal_precedent` · `formal_result` · `expert_position` · `dataset` · `counterexample`. The kinds matter — a historical case and a randomised trial are both evidence but they warrant different confidence and answer different questions.
+
+The `scope` field is load-bearing and usually omitted by systems like this. Most evidence disputes are not about whether a finding is true but about whether it *travels* — whether a UK SME result says anything about Indonesian manufacturing. Storing scope explicitly lets us answer "does this apply to your argument?" instead of just "is this about the same topic?"
+
+### The Mechanism — the key node
+
+A **Mechanism** is an abstract causal relation, stated independently of any instance.
+
+```
+MECHANISM  mec_0031
+  statement  "Unplanned co-location encounters between people holding
+              different knowledge increase the rate of novel recombination."
+  domain     organizational_behaviour
+  aliases    ["serendipitous collision", "corridor conversation",
+              "water-cooler effect", "spontaneous interaction"]
+  atoms      [Bell Labs building design, MIT Building 20, Pixar atrium,
+              Granovetter weak ties, Microsoft remote collaboration study,
+              open-plan interaction studies, GitLab async decision report]
+```
+
+Mechanisms are the join table between how people *talk* and what the world *records*. They are also the expensive, human-curated part — which is exactly why they are the moat (§8).
+
+### Other nodes and the edges
+
+**Nodes:** Atom · Source · Mechanism · Entity (org, person, policy, place) · Claim (our daily claims) · Collection (user-curated sets).
+
+**Edges — the semantics carry the intelligence:**
+
+| Edge | Meaning |
+|---|---|
+| `INSTANTIATES` | atom → mechanism: this case exemplifies that causal story |
+| `SUPPORTS` / `UNDERMINES` | atom → mechanism or claim, with strength |
+| `QUALIFIES` | atom bounds another's scope: "true, but only in services" |
+| `REPLICATES` / `FAILS_TO_REPLICATE` | atom → atom |
+| `SUPERSEDES` | newer, better-designed work displaces older |
+| `CONTRADICTS` | two atoms cannot both be right |
+| `CONTEXTUALIZES` | background needed to read another atom correctly |
+| `CO_MOVED` | *derived from persuasion events* — these atoms tend to change minds together |
+
+That last edge is generated by us and by nobody else. More in §8.
+
+---
+
+## 3. Retrieval — the pipeline
+
+Retrieval is **coupled to the Reasoning Engine**, not bolted beside it. The engine has already parsed the argument (`REASONING_ENGINE.md` §2), so retrieval starts from structure rather than from prose.
+
+```
+Argument Graph (thesis, premises, warrants)
+      │
+ ①  MECHANISM RESOLUTION
+      embed each premise+warrant → nearest canonical mechanisms
+      unmatched & recurring → queue a candidate mechanism for curation
+      │
+ ②  GRAPH EXPANSION  (1–2 hops)
+      mechanism → INSTANTIATES → atoms
+                → SUPPORTS / UNDERMINES → atoms
+                → QUALIFIES → boundary conditions
+                → related mechanisms (competing causal stories)
+      │
+ ③  SCOPE FILTER
+      does the atom's scope overlap the argument's? flag mismatch, don't drop
+      │
+ ④  SYMMETRIC ASSEMBLY   ← non-negotiable
+      supporting · undermining · qualifying, always all three
+      │
+ ⑤  RANK   relevance × strength × diversity × surprise × effectiveness
+      │
+ ⑥  EXPLAIN   every result states why it surfaced
+```
+
+### Ranking, with the two terms that matter
+
+- **Relevance** — mechanism-match confidence × scope overlap
+- **Strength** — the quality grade (§5)
+- **Diversity** — a hard slot rule: never return three atoms from one domain. History, economics, law, and natural science each see the same mechanism differently, and cross-domain evidence is more persuasive precisely because it is less expected.
+- **Surprise** — down-rank what the user would have found themselves. Retrieving Wikipedia's first paragraph is not a service. **Our value is the atom they had no way to know existed.**
+- **Effectiveness** — how often this atom, cited on this mechanism, preceded a real position change. Learned from persuasion events (§8).
+
+### Symmetric retrieval, stated as a rule
+
+> **Every retrieval returns supporting *and* undermining atoms, always, labelled, in the same view.**
+
+Not a toggle, not a second tab. The brief asks "which examples contradict my reasoning" — that must be the default posture, not an option a user has to seek out. A user who publishes having *seen* the best counter-evidence and addressed it has written something far stronger, and has learned something a confirmation engine could never teach them.
+
+---
+
+## 4. Explainability
+
+Every returned atom states its provenance in the graph, in one line:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ BELL LABS · Gertner, The Idea Factory (2012)      HISTORICAL │
+│ Murray Hill was laid out with long corridors deliberately    │
+│ forcing researchers from different disciplines past each     │
+│ other daily.                                                 │
+│ ↳ Instantiates your mechanism: unplanned encounters → novel  │
+│   recombination.                                             │
+│ ⚠ Scope: one firm, 1940s–70s, physical-science R&D.          │
+└──────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ MICROSOFT · Yang et al., Nature Human Behaviour (2022)  ⊖    │
+│ Firm-wide remote work made collaboration networks more       │
+│ static and siloed, with fewer bridging ties.                 │
+│ ↳ SUPPORTS your mechanism — but note it measures network     │
+│   structure, not innovation output. Your thesis needs the    │
+│   second step.                                               │
+└──────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ GITLAB · Remote Work Report (2023)                      ⊘    │
+│ Async, written-first decisions showed higher recall and      │
+│ fewer reversals than meeting-based decisions.                │
+│ ↳ UNDERMINES your mechanism: proposes that written           │
+│   deliberation substitutes for collision rather than losing  │
+│   to it.                                                     │
+└──────────────────────────────────────────────────────────────┘
+```
+
+Three things are happening there that a search engine cannot do: it names the *mechanism link* rather than the keyword overlap; it flags a **scope caveat** unprompted; and in the Microsoft card it points out that the evidence supports an intermediate step but not the user's actual conclusion. That last one is the coach and the graph working as one system, and it is the moment a user learns what evidence *is*.
+
+---
+
+## 5. Quality grading
+
+Not a single number. A small set of facets, shown compactly:
+
+| Facet | Values |
+|---|---|
+| **Design** | RCT / natural experiment / longitudinal / cross-sectional / case / testimony |
+| **Scale** | n, population, geography, period |
+| **Replication** | replicated / mixed / failed / untested / single-study |
+| **Independence** | independent / author-affiliated / **funder-interested** |
+| **Recency** | with a domain-specific decay — a 1990s trade study may still be current; a 2019 remote-work study is not |
+| **Contested** | boolean + link to the contesting atoms |
+
+Rolled into a coarse `A`–`D` for scanning, always expandable to the facets.
+
+**Contested atoms are shown, not hidden.** Marking a finding as disputed and linking the dispute teaches more epistemics than any tutorial. Learning that good-faith experts disagree, and *why*, is a large part of what it means to reason well about the world.
+
+**Funder-interested is called out explicitly.** A four-day-week study funded by a four-day-week advocacy group is still evidence; the user simply needs to know.
+
+---
+
+## 6. Exploration — "like Spotify for evidence"
+
+A dead-ended results list is a search engine. The brief asks for something you *explore*, which means every atom must be a doorway.
+
+From any atom:
+- **Instances of the same mechanism** — the lateral move, across domains
+- **The strongest case against** — follow `UNDERMINES` and `CONTRADICTS`
+- **Where this breaks down** — follow `QUALIFIES`
+- **What replaced it** — follow `SUPERSEDES`
+- **The mechanism's own page** — a canonical view: the causal story, its best evidence, its best counter-evidence, its boundary conditions, and the live claims that turn on it
+
+**Mechanism pages are the sleeper asset.** *"Unplanned encounters produce recombination"* as a page — with the full evidentiary picture on both sides — is a genuinely valuable public artifact that no one has built. It is the thing people will link to from outside Agora.
+
+**Collections** are user-curated atom sets on a theme ("Natural experiments in trade policy"). They are shareable, attributable, and they make curation a first-class contribution — which is how a rung on the participation ladder becomes an asset on the balance sheet (`MOTIVATION_SYSTEM.md` §5).
+
+---
+
+## 7. Integrity — how we never hallucinate a citation
+
+C2 is absolute, so the pipeline is built so that fabrication is structurally impossible rather than merely discouraged.
+
+| Stage | Rule |
+|---|---|
+| **Ingestion** | An atom is *proposed* by a model but must carry a verbatim quote span locating it in a real, resolvable source |
+| **Verification** | Automated: URL resolves, quote matches the fetched text, source is in the registry. Human: a curator confirms the atom faithfully represents the source |
+| **Publication** | No atom enters the served graph unverified. There is no path from generation to display |
+| **Serving** | The assistant may only cite atom IDs. It has no capability to emit a citation that is not a row in the graph |
+| **Drift** | Sources re-fetched on a schedule; dead links and altered text flag the atom for re-verification |
+| **Correction** | Any user can dispute an atom; disputes are triaged; corrections propagate to every argument citing it, and citing users are told |
+
+**The model's role is proposal and linking. Never assertion.** It reads a document and says "this passage might be an atom, and it might instantiate mechanism 31." A human confirms both. That division of labour is what makes the graph trustworthy, and trustworthiness is the whole product.
+
+---
+
+## 8. Why this is a moat
+
+Three assets compound, in increasing order of defensibility.
+
+**1. The mechanism layer.** Atoms are commodity — anyone can scrape papers. The expensive, slow, human work is deciding that Bell Labs, Building 20, the Pixar atrium, weak ties, and the Microsoft study are all instances of *one* causal story. That layer is a curated ontology built over years and it is what makes retrieval reason instead of match.
+
+**2. Contributed atoms.** Every rung on the participation ladder feeds the graph. A user attaching an example to someone's argument is doing distributed, motivated curation — the cheapest high-quality data acquisition available to us, and the reason the motivation system and the evidence graph are the same flywheel rather than two projects.
+
+**3. Effectiveness data — the one nobody can copy.** Because we observe real position changes, we learn *which evidence actually changes minds*, on which mechanism, for which prior. Not predicted persuasiveness — measured.
+
+> This is the intersection of the persuasion graph and the evidence graph, and to our knowledge the dataset does not exist anywhere. It makes our ranking better than any competitor can bootstrap, because they cannot buy it, scrape it, or infer it from a model. They would have to run a social product that measures mind-changing for years.
+
+```
+   more writers → more citations → more measured persuasion
+        ↑                                      │
+        └──── better ranking ←── effectiveness ┘
+```
+
+The graph is also the asset with the longest half-life. Models will commoditise; a verified, mechanism-linked, effectiveness-weighted evidence graph will not.
+
+---
+
+## 9. Cold start
+
+The graph is worthless empty, and this is the hardest execution problem in the document.
+
+**Do not build breadth. Build depth on eight mechanisms.**
+
+Pick the eight that the first ninety days of claims will actually turn on — remote work and innovation, protectionism and growth, regulation and market entry, subsidies and security, energy transition costs, automation and employment, immigration and wages, monetary policy and inequality. For each: 30–50 verified atoms, deliberately spanning history, economics, law, and natural science, with the undermining side deliberately as strong as the supporting side.
+
+Roughly 300 atoms. Achievable by a small curation effort in weeks, and enough for the retrieval to feel uncanny inside its range — which is far better than feeling adequate everywhere.
+
+**Be honest at the edges.** Outside covered mechanisms: *"Nothing in the library fits this yet. You can publish without evidence — it'll be labelled honestly."* Never pad results to look complete. A thin result set the user trusts beats a full one they learn to ignore, and every unmatched-but-recurring mechanism is a prioritised curation task.
+
+---
+
+## 10. Measuring it
+
+| Question | Measure |
+|---|---|
+| Does it reason rather than match? | On a gold set of arguments, recall of relevant atoms that share **no significant vocabulary** with the input |
+| Is it symmetric? | Share of retrievals returning ≥1 undermining atom — target ~100% within covered mechanisms |
+| Is it surprising? | Share of cited atoms the user rates "I didn't know this existed" |
+| Is it honest? | Verified-citation rate: 100%. Any hallucinated citation is a Sev-1 incident |
+| Does it persuade? | Persuasion events on evidence-backed vs unbacked arguments |
+| Is it explored? | Atoms viewed per composition; mechanism-page visits from outside the Composer |
+| Is it growing well? | Contributed atoms passing verification per week; time-to-coverage for a new mechanism |
+
+The first row is the one that decides whether we built the thing in this document or just a better search box.
