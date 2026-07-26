@@ -1,0 +1,1122 @@
+<title>Agora v4 — where thinking is verified</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   AGORA v4
+   Design thesis: the manuscript and the margin.
+   The coach reads from outside the page and can never touch it.
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  --paper:#F6F3ED; --raised:#FFFDF9; --sunk:#EFEBE2;
+  --ink:#15170F; --ink-2:#3A3E33; --ink-3:#6A6F5E; --ink-4:#9AA08C;
+  --line:#E2DFD2; --line-2:#CFCBBB;
+  --accent:#1C3A31; --accent-2:#2E5F50; --accent-soft:#E6EFE9;
+  --agree:#2F6B58; --agree-s:#E8F1EC;
+  --disagree:#9A4A2E; --disagree-s:#F7ECE6;
+  --comp:#4B5872; --comp-s:#EBEEF3;
+  --warn:#8A6A1F; --warn-s:#F5EFDF;
+  --coach:#46566B;
+  --serif:"Source Serif 4",Charter,"Iowan Old Style",Georgia,serif;
+  --ui:"Inter Tight",Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --e:cubic-bezier(.22,1,.36,1);
+  --sh1:0 1px 2px rgb(21 23 15/.04);
+  --sh2:0 4px 16px rgb(21 23 15/.06);
+  --sh3:0 18px 48px rgb(21 23 15/.14);
+  --stage:#E4E0D5;--stage-ink:#22251C;--stage-soft:#666B5A;--stage-line:#C8C2B0;--stage-r:#F1EEE4;
+}
+@media (prefers-color-scheme:dark){:root{--stage:#131510;--stage-ink:#E8E4D7;--stage-soft:#8D9282;
+  --stage-line:#2A2D23;--stage-r:#1C1F16}}
+:root[data-theme=dark]{--stage:#131510;--stage-ink:#E8E4D7;--stage-soft:#8D9282;--stage-line:#2A2D23;--stage-r:#1C1F16}
+:root[data-theme=light]{--stage:#E4E0D5;--stage-ink:#22251C;--stage-soft:#666B5A;--stage-line:#C8C2B0;--stage-r:#F1EEE4}
+*{box-sizing:border-box}
+::selection{background:var(--accent-soft)}
+body{margin:0;min-height:100dvh;background:var(--stage);color:var(--stage-ink);font-family:var(--ui);
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(120% 80% at 50% -18%,var(--stage-r) 0%,transparent 58%)}
+
+/* ── studio ── */
+.studio{max-width:1360px;margin-inline:auto;padding:clamp(.8rem,2.2vw,1.6rem) 1rem 3rem;
+  display:flex;flex-direction:column;gap:.9rem}
+.mast{display:flex;flex-wrap:wrap;gap:.8rem;align-items:flex-end;justify-content:space-between}
+.mast h1{margin:0;font-family:var(--serif);font-size:clamp(1.15rem,2.6vw,1.6rem);font-weight:700;
+  letter-spacing:-.018em}
+.mast p{margin:.2rem 0 0;color:var(--stage-soft);font-size:.82rem;max-width:66ch}
+.pill{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .6rem;border-radius:999px;
+  border:1px solid var(--stage-line);background:var(--stage-r);color:var(--stage-soft);
+  font:600 .62rem/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;white-space:nowrap}
+.pill::before{content:"";width:5px;height:5px;border-radius:999px;background:var(--disagree)}
+.ctl{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;background:var(--stage-r);border:1px solid var(--stage-line);border-radius:9px;
+  padding:2px;gap:1px;flex-wrap:wrap}
+.seg button{appearance:none;border:0;background:transparent;color:var(--stage-soft);
+  font:600 .72rem/1 var(--ui);padding:.42rem .62rem;border-radius:7px;cursor:pointer;white-space:nowrap;
+  transition:background .14s var(--e),color .14s var(--e)}
+.seg button[aria-pressed=true]{background:var(--stage-ink);color:var(--stage)}
+.seg button:focus-visible{outline:2px solid var(--stage-ink);outline-offset:2px}
+.stagewrap{display:flex;justify-content:center}
+.device{--w:1360px;width:min(100%,var(--w));transition:width .45s var(--e);border:1px solid var(--stage-line);
+  border-radius:15px;background:var(--paper);box-shadow:var(--sh3);overflow:hidden}
+.device[data-size=phone]{--w:390px;border-radius:34px;border-width:9px;border-color:#0C0E08}
+.chr{display:flex;align-items:center;gap:.35rem;padding:.4rem .75rem;background:var(--stage-r);
+  border-bottom:1px solid var(--stage-line)}
+.chr i{width:7px;height:7px;border-radius:999px;background:var(--stage-line)}
+.chr .u{flex:1;text-align:center;font:.62rem/1 var(--mono);color:var(--stage-soft);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.device[data-size=phone] .chr{display:none}
+.nt{display:none}.device[data-size=phone] .nt{display:block;height:20px;background:var(--paper);position:relative}
+.device[data-size=phone] .nt::after{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);
+  width:80px;height:5px;border-radius:999px;background:var(--line)}
+.foot{display:flex;flex-wrap:wrap;gap:.35rem 1rem;color:var(--stage-soft);font-size:.73rem}
+.foot b{color:var(--stage-ink);font-weight:650}
+kbd{font:600 .68rem/1 var(--mono);background:var(--stage-r);border:1px solid var(--stage-line);
+  border-bottom-width:2px;border-radius:5px;padding:.15rem .32rem;color:var(--stage-soft)}
+
+/* ══ APP ══ */
+.app{container:app / inline-size;background:var(--paper);color:var(--ink);min-height:740px;
+  display:flex;flex-direction:column;position:relative;font-size:14px}
+.device[data-size=phone] .app{min-height:780px}
+.rowx{display:flex;flex:1;min-height:0}
+.rail{display:none;flex-direction:column;width:200px;flex:0 0 200px;padding:14px 10px;
+  border-right:1px solid var(--line);gap:1px}
+@container app (min-width:920px){.rail{display:flex}}
+.brand{display:flex;align-items:baseline;gap:6px;padding:2px 8px 14px;background:none;border:0;
+  cursor:pointer;color:inherit;text-align:left}
+.brand b{font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:.02em}
+.brand span{font:600 .58rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4)}
+.rl{appearance:none;border:0;background:transparent;color:var(--ink-3);cursor:pointer;text-align:left;
+  font:600 13px/1 var(--ui);padding:8px;border-radius:7px;display:flex;gap:8px;align-items:center;
+  transition:background .13s var(--e),color .13s var(--e)}
+.rl:hover{background:var(--sunk);color:var(--ink)}
+.rl[aria-current=page]{background:var(--accent-soft);color:var(--accent)}
+.rl .c{margin-left:auto;font:.66rem/1 var(--mono);color:var(--ink-4)}
+.rl[aria-current=page] .c{color:var(--accent-2)}
+.railsep{height:1px;background:var(--line);margin:10px 8px}
+.railcap{font:600 .58rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);
+  padding:6px 8px 4px}
+.cmdk{margin-top:auto;display:flex;align-items:center;gap:6px;padding:8px;border-radius:7px;
+  border:1px dashed var(--line-2);background:none;cursor:pointer;color:var(--ink-4);font:600 12px/1 var(--ui)}
+.cmdk:hover{border-color:var(--ink-4);color:var(--ink-3)}
+.tbar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+@container app (min-width:920px){.tbar{display:none}}
+.tbar .brand{padding:0}
+.tabs{display:flex;gap:1px;margin-left:auto}
+.tabs button{appearance:none;border:0;background:transparent;color:var(--ink-3);cursor:pointer;
+  font:600 12px/1 var(--ui);padding:6px 7px;border-radius:6px}
+.tabs button[aria-current=page]{color:var(--accent);background:var(--accent-soft)}
+.main{flex:1;min-width:0;overflow:auto;padding:24px 20px 64px;scroll-behavior:smooth}
+.wrap{max-width:660px;margin-inline:auto}
+.wrap.w{max-width:660px}
+@container app (min-width:1140px){.wrap.w{max-width:1000px}}
+
+/* ── type ── */
+.h1{margin:0;font-family:var(--serif);font-weight:700;letter-spacing:-.02em;
+  font-size:clamp(24px,3.6cqw,40px);line-height:1.08;text-wrap:balance}
+.h2{margin:0 0 8px;font-family:var(--serif);font-weight:700;font-size:22px;line-height:1.2;
+  letter-spacing:-.012em;text-wrap:balance}
+.h3{margin:0 0 6px;font-family:var(--serif);font-weight:600;font-size:17px;line-height:1.3}
+.eyebrow{margin:0 0 10px;font:600 10.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-4)}
+.eyebrow.sp{margin-top:32px}
+.lede{font-size:14.5px;line-height:1.62;color:var(--ink-2)}
+.dim{color:var(--ink-3)}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:999px;
+  font:600 10px/1.6 var(--mono);letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--line-2);
+  color:var(--ink-3);background:var(--raised)}
+.tag.fill{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.tag.plain{border:0;background:none;color:var(--ink-4);padding-left:0}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px;align-items:center}
+.st{display:inline-block;padding:3px 9px;border-radius:999px;font:650 12.5px/1.35 var(--ui)}
+.st.agree{background:var(--agree-s);color:var(--agree)}
+.st.disagree{background:var(--disagree-s);color:var(--disagree)}
+.st.complicated{background:var(--comp-s);color:var(--comp)}
+
+/* ── surfaces ── */
+.card{display:block;width:100%;text-align:left;background:var(--raised);border:1px solid var(--line);
+  border-radius:11px;padding:16px;cursor:pointer;font:inherit;color:inherit;box-shadow:var(--sh1);
+  transition:border-color .14s var(--e),transform .14s var(--e),box-shadow .14s var(--e)}
+.card:hover{border-color:var(--line-2);transform:translateY(-1px);box-shadow:var(--sh2)}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--raised);border:1px solid var(--line);border-radius:11px;padding:16px 18px;
+  box-shadow:var(--sh1)}
+.panel.q{background:var(--sunk);box-shadow:none}
+.g2{display:grid;grid-template-columns:1fr;gap:10px}
+@container app (min-width:1140px){.g2{grid-template-columns:1fr 1fr}}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 0;
+  font-size:12.5px;color:var(--ink-3)}
+.go{color:var(--accent);font-weight:650;flex:0 0 auto;transition:transform .14s var(--e)}
+.card:hover .go{transform:translateX(2px)}
+.btn{appearance:none;min-height:38px;padding:9px 16px;border-radius:8px;border:1px solid var(--accent);
+  background:var(--accent);color:var(--paper);font:650 13px/1 var(--ui);cursor:pointer;
+  transition:transform .1s var(--e),opacity .14s var(--e)}
+.btn:hover{opacity:.9}.btn:active{transform:scale(.985)}
+.btn.o{background:transparent;color:var(--accent)}
+.btn.q{border-color:var(--line-2);background:transparent;color:var(--ink-3)}
+.btn.q:hover{border-color:var(--ink-4);color:var(--ink)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.sm{min-height:30px;padding:6px 11px;font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* ── news ── */
+.chan{display:flex;gap:5px;overflow-x:auto;padding-bottom:12px;margin-bottom:18px;
+  border-bottom:1px solid var(--line);scrollbar-width:none}
+.chan::-webkit-scrollbar{display:none}
+.chan button{appearance:none;border:1px solid var(--line);background:var(--raised);color:var(--ink-3);
+  border-radius:999px;padding:6px 13px;font:600 12.5px/1 var(--ui);cursor:pointer;white-space:nowrap;
+  transition:.14s var(--e)}
+.chan button:hover{border-color:var(--line-2)}
+.chan button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.src{font:650 10px/1.6 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+.clus{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.clus li{display:flex;gap:10px;align-items:baseline;font-size:12.5px;color:var(--ink-3)}
+.clus .p{font:650 9.5px/1.7 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);
+  flex:0 0 108px}
+.claimbx{margin-top:26px;border:1px solid var(--accent);border-radius:12px;padding:20px;
+  background:linear-gradient(170deg,var(--accent-soft),var(--raised) 70%);box-shadow:var(--sh2)}
+.claimbx .k{font:650 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2);
+  margin-bottom:9px}
+.claimbx .q{font-family:var(--serif);font-size:21px;line-height:1.26;font-weight:700;margin:0 0 14px;
+  letter-spacing:-.012em}
+
+/* ── position ── */
+.stx{display:grid;grid-template-columns:1fr;gap:7px}
+@container app (min-width:760px){.stx{grid-template-columns:repeat(3,1fr)}}
+.sb{appearance:none;width:100%;min-height:46px;padding:13px;border-radius:9px;border:1.5px solid;
+  background:var(--raised);font:650 14px/1 var(--ui);cursor:pointer;transition:.14s var(--e)}
+.sb.agree{border-color:var(--agree);color:var(--agree)}
+.sb.agree:hover{background:var(--agree);color:var(--paper)}
+.sb.disagree{border-color:var(--disagree);color:var(--disagree)}
+.sb.disagree:hover{background:var(--disagree);color:var(--paper)}
+.sb.complicated{border-color:var(--comp);color:var(--comp)}
+.sb.complicated:hover{background:var(--comp);color:var(--paper)}
+.sb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--line);
+  animation:wipe .55s var(--e) both}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.sa{background:var(--agree)}.sd{background:var(--disagree)}.sc{background:var(--comp)}
+.lg{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:5px}
+.lg li{display:flex;align-items:center;gap:8px;font-size:13px;animation:up .3s var(--e) both}
+.lg li:nth-child(2){animation-delay:.05s}.lg li:nth-child(3){animation-delay:.1s}
+@keyframes up{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.lg li.me{font-weight:650}
+.pip{width:8px;height:8px;border-radius:999px;flex:0 0 auto}
+.pip.a{background:var(--agree)}.pip.d{background:var(--disagree)}.pip.c{background:var(--comp)}
+.lg .v{margin-left:auto;font:12.5px var(--mono);font-variant-numeric:tabular-nums}
+.mytag{font:700 9.5px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--ink-4)}
+.callout{margin-top:14px;padding:11px 13px;border-radius:9px;font-size:13px;font-weight:600;
+  animation:up .35s var(--e) .3s both}
+.callout.miss{background:var(--comp-s);color:var(--comp)}
+.callout.hit{background:var(--agree-s);color:var(--agree)}
+
+/* ── composer ── */
+.cmp{display:grid;grid-template-columns:1fr;gap:20px;align-items:start}
+@container app (min-width:1140px){.cmp{grid-template-columns:minmax(0,1fr) 336px}}
+.crail{display:flex;gap:10px;align-items:baseline;padding:0 0 14px;margin-bottom:16px;
+  border-bottom:1px solid var(--line);font-family:var(--serif);font-size:14px;color:var(--ink-3)}
+.crail .n{font:10px/1 var(--mono);color:var(--ink-4);flex:0 0 auto}
+.crail .swap{margin-left:auto;flex:0 0 auto;font:9.5px/1 var(--mono);letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-4);border:1px dashed var(--line);
+  border-radius:5px;padding:4px 7px;cursor:help}
+.steps{display:flex;gap:7px;list-style:none;margin:0 0 20px;padding:0;flex-wrap:wrap}
+.steps li{display:flex;align-items:center;gap:6px;font:700 10px/1 var(--mono);letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-4);transition:color .2s var(--e)}
+.steps li[data-on=true]{color:var(--accent)}
+.steps li[data-done=true]{color:var(--agree)}
+.steps li+li::before{content:"";width:14px;height:1px;background:var(--line-2)}
+.ms{background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:22px 24px;
+  box-shadow:var(--sh1)}
+.ms .lab{display:block;font:700 10px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-4);margin-bottom:8px}
+.ms .pr{margin:0 0 4px;font-family:var(--serif);font-size:18px;line-height:1.32;letter-spacing:-.01em}
+.ms .sub{margin:0 0 16px;font-size:12.5px;color:var(--ink-4);font-style:italic}
+.ms textarea{width:100%;border:0;outline:0;resize:none;background:transparent;color:var(--ink);
+  font-family:var(--serif);caret-color:var(--accent);display:block}
+.ms textarea::placeholder{color:var(--ink-4);font-style:italic}
+.ms textarea.i{font-size:19px;line-height:1.42;min-height:52px}
+.ms textarea.b{font-size:15.5px;line-height:1.68;min-height:132px;max-width:64ch}
+.ms .ct{margin:12px 0 0;font:10.5px/1 var(--mono);color:var(--ink-4);font-variant-numeric:tabular-nums}
+.msf{display:flex;gap:8px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.done{background:transparent;border:0;border-left:2px solid var(--agree);width:100%;text-align:left;
+  padding:6px 0 6px 12px;margin-bottom:12px;cursor:pointer;font:inherit;color:inherit;
+  animation:up .3s var(--e) both}
+.done .l{display:block;font:700 9.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--agree);margin-bottom:3px}
+.done .t{font-family:var(--serif);font-size:13.5px;line-height:1.45;color:var(--ink-3)}
+.done:hover .t{color:var(--ink)}
+
+/* ── the margin ── */
+.mg{border-left:2px solid var(--line);padding-left:16px;min-height:120px}
+.mg h4{margin:0 0 2px;font:700 10px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--ink-4)}
+.mg .r{margin:0 0 16px;font-size:11.5px;font-style:italic;color:var(--ink-4);line-height:1.45}
+.nt2{margin:0 0 12px;animation:up .24s var(--e) both}
+.nt2 .g{display:inline-block;font:700 9.5px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;
+  margin-bottom:5px}
+.nt2 p{margin:0;font-size:13px;line-height:1.52;color:var(--coach)}
+.nt2.probe .g{color:#5A6B7E}.nt2.flag .g{color:#8C4A3A}.nt2.aff .g{color:#3D6B57}
+.nt2.ev .g{color:var(--accent-2)}.nt2.cnt .g{color:#5A6B7E}
+.mini{appearance:none;border:1px solid var(--coach);background:transparent;color:var(--coach);
+  border-radius:6px;padding:5px 9px;font:650 11.5px/1 var(--ui);cursor:pointer;min-height:28px;margin-top:8px;
+  transition:.14s var(--e)}
+.mini:hover{background:var(--coach);color:var(--raised)}
+.think{display:flex;align-items:center;gap:8px;color:var(--ink-4);font-size:12px;padding:4px 0}
+.think i{width:3px;height:16px;border-radius:2px;background:var(--accent-2);animation:pl 1.05s ease-in-out infinite}
+.think i:nth-child(2){animation-delay:.14s}.think i:nth-child(3){animation-delay:.28s}
+@keyframes pl{0%,100%{opacity:.25;height:8px}50%{opacity:1;height:16px}}
+
+/* ── THE READING (signature) ── */
+.read{background:var(--raised);border:1px solid var(--line-2);border-radius:12px;overflow:hidden;
+  box-shadow:var(--sh2);margin-bottom:16px}
+.readhd{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--sunk);
+  border-bottom:1px solid var(--line)}
+.readhd .t{font:700 10px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.readhd .s{margin-left:auto;font:10px/1 var(--mono);color:var(--ink-4)}
+.readbd{padding:16px}
+.pl{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.pl li{display:grid;grid-template-columns:1fr auto;gap:3px 10px;align-items:start;padding:9px 10px;
+  border-radius:7px;font-size:13px;animation:up .3s var(--e) both}
+.pl .x{grid-column:1/-1}
+@container app (min-width:620px){
+ .pl li{grid-template-columns:78px minmax(0,1fr) auto;gap:10px;padding:8px 10px}
+ .pl .x{grid-column:auto}}
+.pl li:nth-child(1){animation-delay:.04s}.pl li:nth-child(2){animation-delay:.1s}
+.pl li:nth-child(3){animation-delay:.16s}.pl li:nth-child(4){animation-delay:.22s}
+.pl li:nth-child(5){animation-delay:.28s}.pl li:nth-child(6){animation-delay:.34s}
+.pl li:hover{background:var(--sunk)}
+.pl .k{font:700 9.5px/1.5 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-4);
+  padding-top:2px}
+.pl .x{font-family:var(--serif);line-height:1.45;color:var(--ink-2)}
+.pl li.imp .x{font-style:italic;color:var(--ink-3)}
+.pl li.imp{background:repeating-linear-gradient(-45deg,transparent,transparent 5px,var(--sunk) 5px,var(--sunk) 6px)}
+.pl li.imp .k{color:var(--warn)}
+.pl .f{font:700 9px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
+  padding-top:2px}
+.f.ok{color:var(--agree)}.f.no{color:var(--disagree)}.f.qq{color:var(--warn)}
+.scheme{margin-top:14px;padding:13px 15px;border-radius:9px;background:var(--comp-s);border:1px solid #D6DBE4}
+.scheme .n{font:700 9.5px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--comp);
+  margin-bottom:5px}
+.scheme .v{font-family:var(--serif);font-size:15px;font-weight:600;margin-bottom:8px}
+.scheme .cq{margin:0 0 8px;font-size:12px;color:var(--ink-3);line-height:1.6}
+.scheme ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--ink-2);line-height:1.65}
+.scheme li::marker{color:var(--comp)}
+.diagn{display:grid;gap:6px;margin-top:14px}
+.dg{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:flex-start;padding:9px 11px;border-radius:8px;
+  font-size:12.5px;line-height:1.5;border:1px solid}
+.dg>div{flex:1 1 100%;min-width:0}
+@container app (min-width:620px){.dg{flex-wrap:nowrap}.dg>div{flex:1 1 auto}}
+.dg.hi{background:var(--disagree-s);border-color:#EBD5C9;color:#7A3A22}
+.dg.md{background:var(--warn-s);border-color:#E7DCBF;color:#6F5518}
+.dg.lo{background:var(--sunk);border-color:var(--line);color:var(--ink-2)}
+.dg .sev{font:700 9px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;flex:0 0 auto}
+@container app (min-width:620px){.dg .sev{flex:0 0 62px}}
+.relv{margin-top:14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:11px 13px;border-radius:9px;
+  background:var(--agree-s);border:1px solid #CFE2D6;font-size:12.5px;color:var(--agree)}
+.relv.warn{background:var(--warn-s);border-color:#E7DCBF;color:#6F5518}
+.relv b{font:700 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase}
+
+/* ── mechanism / examples ── */
+.mech{background:var(--accent);color:#E9F0EB;border-radius:11px;padding:16px 18px;margin-bottom:14px}
+.mech .k{font:700 9.5px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;opacity:.62;
+  margin-bottom:7px}
+.mech .m{font-family:var(--serif);font-size:16px;line-height:1.45;margin:0}
+.mech .sub{margin:9px 0 0;font-size:11.5px;opacity:.66;line-height:1.5}
+.dchips{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 12px}
+.dchip{appearance:none;border:1px solid var(--line);background:var(--raised);color:var(--ink-3);
+  border-radius:999px;padding:5px 11px;font:600 11.5px/1 var(--ui);cursor:pointer;transition:.14s var(--e)}
+.dchip:hover{border-color:var(--line-2)}
+.dchip[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.dchip .n{opacity:.55;margin-left:4px;font-family:var(--mono);font-size:10px}
+.exs{display:grid;gap:9px}
+.ex{background:var(--raised);border:1px solid var(--line);border-radius:11px;padding:14px 15px;
+  box-shadow:var(--sh1);transition:.14s var(--e)}
+.ex:hover{border-color:var(--line-2);box-shadow:var(--sh2)}
+.ex.sup{border-left:3px solid var(--agree)}
+.ex.brk{border-left:3px solid var(--disagree)}
+.ex.qual{border-left:3px solid var(--warn)}
+.exh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.exd{font:700 9.5px/1.6 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-4)}
+.exv{margin-left:auto;font:700 9px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.ex.sup .exv{color:var(--agree)}.ex.brk .exv{color:var(--disagree)}.ex.qual .exv{color:var(--warn)}
+.ex .t{font-family:var(--serif);font-size:15.5px;font-weight:600;line-height:1.35;margin:0 0 6px;
+  letter-spacing:-.008em}
+.ex .b{margin:0 0 9px;font-size:13px;line-height:1.55;color:var(--ink-2)}
+.map{background:var(--sunk);border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.55}
+.map .mk{font:700 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);
+  display:block;margin-bottom:5px}
+.map code{font-family:var(--mono);font-size:11.5px;background:var(--raised);padding:1px 5px;border-radius:4px;
+  border:1px solid var(--line)}
+.brkline{margin-top:8px;font-size:12.5px;line-height:1.5;color:#7A3A22;display:flex;gap:7px}
+.brkline b{font:700 9px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;flex:0 0 auto}
+.exf{display:flex;gap:7px;margin-top:11px;align-items:center;flex-wrap:wrap}
+.cited{display:flex;gap:9px;align-items:flex-start;background:var(--accent-soft);border:1px solid var(--accent);
+  border-radius:9px;padding:11px 13px;margin-top:12px;font-size:13px;animation:fly .34s var(--e) both}
+@keyframes fly{from{opacity:0;transform:translateY(-14px) scale(.96)}to{opacity:1;transform:none}}
+.srch{width:100%;margin-top:12px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);
+  background:var(--raised);color:var(--ink);font:13px var(--ui)}
+.srch:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ── review board ── */
+.rbh{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+.tl{display:flex;gap:0;margin:18px 0;list-style:none;padding:0}
+.tl li{flex:1;position:relative;padding-top:20px;font-size:11px;color:var(--ink-4);text-align:center}
+.tl li::before{content:"";position:absolute;top:6px;left:50%;width:9px;height:9px;border-radius:999px;
+  background:var(--line-2);transform:translateX(-50%);z-index:1}
+.tl li::after{content:"";position:absolute;top:10px;left:50%;right:-50%;height:1px;background:var(--line)}
+.tl li:last-child::after{display:none}
+.tl li.on::before{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tl li.on{color:var(--accent);font-weight:650}
+.strk{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+.strk li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 11px;
+  border-radius:8px;font-size:13px;background:var(--sunk);animation:up .3s var(--e) both}
+.strk li:nth-child(2){animation-delay:.06s}.strk li:nth-child(3){animation-delay:.12s}
+.strk li:nth-child(4){animation-delay:.18s}
+.strk li.hit{background:var(--disagree-s);box-shadow:inset 3px 0 0 var(--disagree)}
+.strk .nm{min-width:0}
+.strk .nm b{display:block;font:700 9px/1.5 var(--mono);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-4)}
+.strk .nm span{font-family:var(--serif);line-height:1.4}
+.strk .vd{font:700 9px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)}
+.strk li.hit .vd{color:var(--disagree)}
+.pgrid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+@container app (min-width:760px){.pgrid{grid-template-columns:1fr 1fr}}
+.pbox{padding:13px 15px;border-radius:9px;border:1px solid var(--line);background:var(--raised)}
+.pbox .k{font:700 9px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--ink-4);
+  margin-bottom:6px}
+.pbox .v{font-family:var(--serif);font-size:16px;font-weight:600}
+.pbox.wrong{border-color:#EBD5C9;background:var(--disagree-s)}
+.pbox.wrong .v{color:var(--disagree)}
+.onemove{background:var(--accent-soft);border:1px solid var(--accent-2);border-radius:10px;padding:14px 16px;
+  font-size:13.5px;line-height:1.6;margin-top:14px}
+.onemove b{color:var(--accent)}
+
+/* ── revision ── */
+.tgs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:12px 0}
+@container app (min-width:760px){.tgs{grid-template-columns:repeat(3,1fr)}}
+.tg{appearance:none;border:1px solid var(--line);background:var(--raised);border-radius:9px;padding:10px 11px;
+  cursor:pointer;text-align:left;font:inherit;color:inherit;min-height:46px;transition:.14s var(--e)}
+.tg:hover{border-color:var(--line-2)}
+.tg[aria-pressed=true]{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.tg b{display:block;font:650 13px/1.25 var(--ui)}
+.tg span{display:block;font-size:11px;opacity:.7;margin-top:2px}
+.dv{border-left:3px solid var(--line-2);padding:11px 14px;background:var(--raised);border-radius:0 9px 9px 0;
+  margin-bottom:8px}
+.dv.n{border-left-color:var(--agree)}
+.dv .l{font:700 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);
+  display:block;margin-bottom:5px}
+.dv.n .l{color:var(--agree)}
+.dv p{margin:0;font-family:var(--serif);font-size:14px;line-height:1.6}
+/* negative margin cancels the padding so the highlight doesn't push punctuation away */
+.dv ins{background:var(--agree-s);text-decoration:none;padding:1px 3px;margin:0 -3px;border-radius:3px;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.ackbx{margin-top:14px;padding:13px 15px;border-radius:9px;background:var(--agree-s);border:1px solid #CFE2D6;
+  color:var(--agree);font-size:13px;line-height:1.55;animation:up .35s var(--e) both}
+.ackbx b{display:block;margin-bottom:3px}
+
+/* ── progress ── */
+.stg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:22px}
+@container app (min-width:760px){.stg{grid-template-columns:repeat(4,1fr)}}
+.stt{background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:13px 14px;
+  box-shadow:var(--sh1)}
+.stt .v{font:700 24px/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.stt .k{margin-top:5px;font:10px/1.3 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-4)}
+.stt .d{margin-top:4px;font-size:11.5px;color:var(--agree);font-weight:600}
+.evo{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}
+.evc{background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:13px;text-align:center;
+  box-shadow:var(--sh1)}
+.evc .m{font:700 9.5px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--ink-4)}
+.evc pre{margin:11px 0;font:10px/1.4 var(--mono);color:var(--ink-3);white-space:pre;overflow:hidden}
+.evc .c{font:10px/1.5 var(--mono);color:var(--ink-4)}
+.crv{background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:10px;
+  box-shadow:var(--sh1)}
+.cr{display:flex;align-items:center;gap:10px;font-size:12.5px;margin-bottom:7px}
+.cr .l{flex:0 0 74px;font:10px/1 var(--mono);color:var(--ink-4)}
+.cr .t{flex:1;height:7px;background:var(--sunk);border-radius:999px;overflow:hidden}
+/* grow by transform, not by animating width: an implicit to-keyframe combined
+   with fill-mode:both pins the bar at 0 and the chart silently renders empty */
+.cr .f{display:block;height:100%;width:var(--w,0%);background:var(--accent);border-radius:999px;
+  transform-origin:left center;animation:gw .7s var(--e) both}
+@keyframes gw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.cr .v{flex:0 0 30px;text-align:right;font:11.5px var(--mono);font-variant-numeric:tabular-nums}
+.axl{margin:0 0 12px;font:10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-4)}
+.axl span{color:var(--accent)}
+/* attack-surface heatmap */
+.hm{display:grid;grid-template-columns:minmax(72px,1fr) repeat(4,minmax(0,1fr));gap:4px;align-items:center;margin-top:4px}
+@container app (min-width:620px){.hm{grid-template-columns:minmax(96px,1.4fr) repeat(4,1fr);gap:5px}}
+.hmh{font:700 9px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);text-align:center}
+.hmr{font-size:11px;color:var(--ink-2);line-height:1.3}
+@container app (min-width:620px){.hmr{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.hmx{position:relative;height:26px}
+.hmx i{position:absolute;inset:0;border-radius:5px;background:var(--sunk);
+  transform-origin:center;animation:cell .4s var(--e) var(--d,0s) both}
+.hmx i[data-n="1"]{background:color-mix(in srgb,var(--disagree) 16%,var(--sunk))}
+.hmx i[data-n="2"]{background:color-mix(in srgb,var(--disagree) 34%,var(--sunk))}
+.hmx i[data-n="3"]{background:color-mix(in srgb,var(--disagree) 58%,var(--sunk))}
+.hmx i[data-n="4"]{background:color-mix(in srgb,var(--disagree) 84%,var(--sunk))}
+.hmx u{position:absolute;inset:-2px;border:1.5px solid var(--ink);border-radius:7px;pointer-events:none}
+@keyframes cell{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+.hml{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:12px;
+  font:9.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-4)}
+.hml i{width:16px;height:9px;border-radius:3px;background:var(--sunk)}
+.hml i[data-n="1"]{background:color-mix(in srgb,var(--disagree) 16%,var(--sunk))}
+.hml i[data-n="2"]{background:color-mix(in srgb,var(--disagree) 34%,var(--sunk))}
+.hml i[data-n="3"]{background:color-mix(in srgb,var(--disagree) 58%,var(--sunk))}
+.hml i[data-n="4"]{background:color-mix(in srgb,var(--disagree) 84%,var(--sunk))}
+.hml .pk{margin-left:auto;display:flex;align-items:center;gap:5px}
+.hml .pk u{width:14px;height:10px;border:1.5px solid var(--ink);border-radius:4px}
+.pr2{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+@container app (min-width:760px){.pr2{grid-template-columns:1fr 1fr}}
+.prc{background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:15px;box-shadow:var(--sh1)}
+.prc .w{font:700 9.5px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--ink-4);
+  margin-bottom:8px;display:block}
+.prc p{margin:0;font-family:var(--serif);font-size:14px;line-height:1.6}
+
+/* profile */
+.prow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px 0;
+  border-bottom:1px solid var(--line);font-size:13px}
+@container app (max-width:640px){.prow{grid-template-columns:1fr;gap:5px}}
+.prow .d{font:10.5px/1 var(--mono);color:var(--ink-4);white-space:nowrap}
+.prow .c{font-family:var(--serif);font-size:14px}
+.priv{background:var(--comp-s);border:1px solid #D6DBE4;border-radius:10px;padding:14px 16px;font-size:12.5px;
+  color:var(--comp);line-height:1.6;margin-top:10px}
+.tt{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ttl{border:1px solid var(--accent-2);color:var(--accent);border-radius:999px;padding:3px 10px;
+  font:650 11.5px/1.5 var(--ui)}
+
+/* landing */
+.land{padding:52px 4px 24px;max-width:620px;margin-inline:auto}
+.land .k{font:650 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent-2);
+  margin-bottom:16px}
+.land h1{margin:0 0 16px;font-family:var(--serif);font-size:clamp(28px,5.4cqw,46px);line-height:1.04;
+  font-weight:700;letter-spacing:-.028em;text-wrap:balance}
+.land p{margin:0 0 26px;font-size:16px;color:var(--ink-2);line-height:1.62}
+.loopk{display:flex;align-items:center;gap:6px;margin:38px 0 9px;
+  font:9.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-4)}
+.loopk i{width:11px;height:11px;border-radius:4px;border:1px solid var(--line-2);background:var(--raised)}
+.loopk i.h{border-color:var(--accent-2);background:var(--accent-soft)}
+.loopk i:not(.h){margin-left:10px}
+.loop u{align-self:center;text-decoration:none;color:var(--ink-4);font-size:10px}
+.loop{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:0}
+.loop span{font:600 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);
+  border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:var(--raised)}
+.loop span.h{border-color:var(--accent-2);color:var(--accent);background:var(--accent-soft)}
+.thr{display:grid;grid-template-columns:1fr;gap:9px;margin-top:34px}
+@container app (min-width:760px){.thr{grid-template-columns:repeat(3,1fr)}}
+.tc{background:var(--raised);border:1px solid var(--line);border-radius:11px;padding:15px;box-shadow:var(--sh1)}
+.tc h4{margin:0 0 6px;font-family:var(--serif);font-size:15px;letter-spacing:-.01em}
+.tc p{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.55}
+
+/* command palette */
+.scrim{position:absolute;inset:0;background:rgb(21 23 15/.28);backdrop-filter:blur(2px);z-index:40;
+  display:flex;align-items:flex-start;justify-content:center;padding-top:12%;animation:fd .16s var(--e) both}
+@keyframes fd{from{opacity:0}to{opacity:1}}
+.pal{width:min(92%,520px);background:var(--raised);border:1px solid var(--line-2);border-radius:13px;
+  box-shadow:var(--sh3);overflow:hidden;animation:pop .2s var(--e) both}
+@keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+.pal input{width:100%;border:0;outline:0;padding:15px 17px;font:15px var(--ui);background:transparent;
+  color:var(--ink);border-bottom:1px solid var(--line)}
+.pal ul{list-style:none;margin:0;padding:6px;max-height:300px;overflow:auto}
+.pal li button{width:100%;display:flex;gap:10px;align-items:center;background:none;border:0;cursor:pointer;
+  padding:9px 11px;border-radius:7px;font:13px var(--ui);color:var(--ink-2);text-align:left}
+.pal li button:hover,.pal li button:focus-visible{background:var(--accent-soft);color:var(--accent);outline:0}
+.pal .kb{margin-left:auto;font:10px/1 var(--mono);color:var(--ink-4)}
+
+/* investor lens */
+.lens{position:relative;border:1px dashed var(--comp);border-radius:10px;padding:11px 13px;
+  background:var(--comp-s);font-size:12px;color:var(--comp);line-height:1.55;margin:12px 0}
+.lens b{display:block;font:700 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="studio">
+  <header class="mast">
+    <div>
+      <h1>Agora v4 — where thinking is verified</h1>
+      <p>News is the way in. The claim is where everyone argues the same proposition. The coach reads your reasoning as a structure and never writes a word of it. What you learn happens after you publish.</p>
+    </div>
+    <span class="pill">Prototype · illustrative content</span>
+  </header>
+
+  <div class="ctl">
+    <div class="seg" role="group" aria-label="Screen">
+      <button data-s="landing" aria-pressed="true">Landing</button>
+      <button data-s="news" aria-pressed="false">News</button>
+      <button data-s="article" aria-pressed="false">Article</button>
+      <button data-s="position" aria-pressed="false">Position</button>
+      <button data-s="composer" aria-pressed="false">Composer</button>
+      <button data-s="reading" aria-pressed="false">The Reading</button>
+      <button data-s="examples" aria-pressed="false">Examples</button>
+      <button data-s="debate" aria-pressed="false">Debate</button>
+      <button data-s="review" aria-pressed="false">Review</button>
+      <button data-s="revision" aria-pressed="false">Revision</button>
+      <button data-s="progress" aria-pressed="false">Progress</button>
+      <button data-s="profile" aria-pressed="false">Profile</button>
+    </div>
+    <div class="seg" role="group" aria-label="Options">
+      <button id="lens" aria-pressed="false">Investor lens</button>
+      <button id="dk" aria-pressed="true">Desktop</button>
+      <button id="ph" aria-pressed="false">Phone</button>
+    </div>
+  </div>
+
+  <div class="stagewrap">
+    <div class="device" id="device" data-size="desk">
+      <div class="chr"><i></i><i></i><i></i><span class="u" id="url">agora.example/</span></div>
+      <div class="nt"></div>
+      <div class="app" id="app"></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span><b>Path:</b> News → story → the claim → predict → commit → write → <b>The Reading</b> → examples → publish → <b>Review</b> → revise.</span>
+    <span><b>Investor lens</b> overlays why each screen is hard to copy. Off by default.</span>
+    <span><kbd>⌘K</kbd> in-app command palette.</span>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ─────────────── content ─────────────── */
+const CH=[["world","World"],["fr","France"],["us","United States"],["uk","United Kingdom"],["jp","Japan"],["sci","Science"]];
+const ART=[
+ {id:"a2",ch:"world",pub:"Financial Times",t:"5h",n:"C-0411",
+  h:"Tariff measures multiply as industrial policy returns",
+  sf:"New trade restrictions announced this quarter outnumber liberalising measures for the fourth consecutive year, according to trade monitors.",
+  cl:[["Reuters","Trade monitors record fourth straight year of net restriction"],
+      ["The Economist","Industrial policy is back. The evidence has not caught up"],
+      ["Nikkei Asia","Asian exporters recalculate exposure"]],claim:"c2"},
+ {id:"a1",ch:"world",pub:"Reuters",t:"2h",n:"C-0412",
+  h:"Four-day week trials expand across European public sectors",
+  sf:"Several regional governments have extended compressed-week pilots into a third year, citing retention rather than productivity as the driver.",
+  cl:[["Financial Times","Employers report mixed cost outcomes"],["Le Monde","Les collectivités élargissent l'expérimentation"]],claim:"c1"},
+ {id:"a3",ch:"sci",pub:"Nature",t:"1d",n:"C-0410",
+  h:"Distributed research teams show different citation patterns",
+  sf:"A large bibliometric study finds collaboration networks in remote-first institutions are more clustered, with contested implications.",
+  cl:[["Science","Commentary: what citation clustering does and does not tell us"]],claim:"c3"},
+ {id:"a4",ch:"jp",pub:"Nikkei Asia",t:"7h",n:"C-0409",
+  h:"Semiconductor support packages reach new highs across Asia",
+  sf:"Combined state support for domestic fabrication has roughly doubled since 2021, increasingly framed in security terms.",
+  cl:[["Reuters","Governments frame chip spending as strategic"]],claim:"c4"},
+ {id:"a5",ch:"uk",pub:"BBC News",t:"9h",n:"C-0407",
+  h:"Universities reconsider standardised testing in admissions",
+  sf:"Several institutions have announced reviews of test-optional policies, citing predictive-validity evidence.",
+  cl:[["The Economist","The quiet return of the entrance exam"]],claim:"c6"},
+ {id:"a6",ch:"sci",pub:"The Lancet",t:"1d",n:"C-0408",
+  h:"Adolescent mental health and screen exposure: cohort findings",
+  sf:"A multi-country cohort finds associations that vary substantially by measurement approach.",
+  cl:[["Nature","Why the screen-time literature disagrees with itself"]],claim:"c5"}];
+
+const CLAIM={
+ c2:{s:"Protectionism hurts long-term economic growth.",sp:{a:34,d:41,c:25}},
+ c1:{s:"The 4-day work week is a luxury of rich economies.",sp:{a:83,d:11,c:6}},
+ c3:{s:"Remote work reduces innovation.",sp:{a:29,d:44,c:27}},
+ c4:{s:"Chip subsidies are national security spending, not industrial policy.",sp:{a:31,d:12,c:14}},
+ c5:{s:"Social media is the main driver of the teen mental-health decline.",sp:{a:38,d:33,c:29}},
+ c6:{s:"Universities should stop using standardised test scores.",sp:{a:27,d:48,c:25}}};
+
+const SEED={idea:"The binding constraint is export discipline, not the tariff itself.",
+ arg:"Everyone knows shelter from competition removes the pressure that forces firms to improve, because managers who cannot lose market share have no reason to cut costs. Protection is therefore self-defeating over any long horizon.",
+ ex:"Korea industrialised behind high tariffs but tied that support to export performance."};
+
+const MECH="Shelter from competitive pressure reduces the incentive to improve, unless an external performance test is substituted for the market's.";
+
+const EX=[
+ {d:"Economic history",r:"sup",t:"South Korea's export-contingent protection (1962–1979)",
+  b:"Tariff and credit support were conditioned on export volumes. Firms that missed targets lost access. Protection existed, but the performance test did not disappear — it was relocated.",
+  map:[["your <code>shelter</code>","domestic tariff wall"],["your <code>pressure</code>","export quotas as substitute discipline"],["your <code>outcome</code>","productivity rose"]],
+  brk:"This is the strongest case *for* your revised claim, not your original one. It only supports you once you add the discipline condition."},
+ {d:"Military history",r:"sup",t:"Interwar armies without combat feedback (1919–1939)",
+  b:"Militaries that went two decades without fighting drifted toward doctrine that flattered existing structures. The forces that innovated substituted rigorous wargaming for combat — an artificial performance test.",
+  map:[["your <code>shelter</code>","absence of war"],["your <code>pressure</code>","adversarial wargames"],["your <code>outcome</code>","doctrine quality diverged"]],
+  brk:"Strong structural match. Weaker as evidence: selection is severe — we mostly remember the militaries that were later tested."},
+ {d:"Law / regulation",r:"brk",t:"Bell Labs under the 1956 consent decree",
+  b:"AT&T was a legally sheltered monopoly, insulated from competitive pressure by regulation — and produced the transistor, the laser, information theory and Unix.",
+  map:[["your <code>shelter</code>","statutory monopoly"],["your <code>pressure</code>","none from the market"],["your <code>outcome</code>","extraordinary innovation"]],
+  brk:"This breaks your mechanism directly. Guaranteed monopoly rents funded research no competitive firm could justify. Your claim needs to explain why this case exists."},
+ {d:"Economic history",r:"brk",t:"The Napoleonic blockade and French cotton mechanisation",
+  b:"Juhász (2018) uses the blockade as a natural experiment: regions accidentally protected from British competition mechanised faster and stayed more productive decades later.",
+  map:[["your <code>shelter</code>","wartime trade blockade"],["your <code>pressure</code>","removed, not substituted"],["your <code>outcome</code>","productivity rose anyway"]],
+  brk:"The cleanest counterexample available — quasi-random assignment, so it is hard to dismiss as selection. Your claim must either bound itself to a period or explain infant-industry dynamics."},
+ {d:"Business",r:"qual",t:"Japanese domestic keiretsu vs export champions (1970s–80s)",
+  b:"The same economy produced globally dominant exporters and famously unproductive domestic sectors — retail, construction, food processing — protected from foreign entry.",
+  map:[["your <code>shelter</code>","non-tariff domestic barriers"],["your <code>pressure</code>","present in exports, absent domestically"],["your <code>outcome</code>","productivity split within one country"]],
+  brk:"Bounds rather than breaks: it supports you for the domestic sectors and against you for exports. Useful precisely because it holds the country constant."},
+ {d:"Medicine",r:"qual",t:"The hygiene hypothesis in immune development",
+  b:"Immune systems developing without pathogen exposure show higher rates of dysregulation — a system that stops being challenged stops calibrating.",
+  map:[["your <code>shelter</code>","reduced microbial exposure"],["your <code>pressure</code>","absent immune challenge"],["your <code>outcome</code>","poorer regulation"]],
+  brk:"The analogy is seductive and weak. Immune systems have no strategic agent choosing whether to improve; firms do. Using this would read as rhetorical rather than evidential."},
+ {d:"Sport",r:"qual",t:"Closed leagues without relegation",
+  b:"Leagues where poor performance carries no existential consequence show measurably lower late-season competitive intensity from eliminated teams.",
+  map:[["your <code>shelter</code>","no relegation"],["your <code>pressure</code>","removed for eliminated teams"],["your <code>outcome</code>","reduced effort"]],
+  brk:"Structurally clean but trivially small stakes. It illustrates the mechanism well; it evidences nothing about national economies."}];
+const DOMS=[["all","All",7],["Economic history","History",2],["Military history","Military",1],
+  ["Law / regulation","Law",1],["Business","Business",1],["Medicine","Medicine",1],["Sport","Sport",1]];
+
+/* attack surface, 0–4 per quarter — the shape of the year, not a score */
+const ATK=[["Thesis",[2,1,1,0]],["Premises",[4,3,2,1]],["Implicit assumptions",[0,3,4,2]],
+ ["Examples",[3,2,1,0]],["Evidence",[0,1,2,3]]];
+
+const TAGS=[["conceded","Conceded","they were right"],["narrowed","Narrowed","scoped to where it holds"],
+ ["clarified","Clarified","meant something narrower"],["supported","Supported","added the support"],
+ ["held","Held","answered without changing"],["withdrew","Withdrew","doesn't survive"]];
+const LB={agree:"Agree",disagree:"Disagree",complicated:"It’s complicated"};
+
+/* ─────────────── state ─────────────── */
+const S={s:"landing",ch:"world",art:"a2",claim:"c2",pred:null,pos:null,swap:false,
+  step:1,idea:"",arg:"",ex:"",cite:null,weak:null,pub:false,tag:null,rev:false,dom:"all",lens:false,pal:false};
+const app=document.getElementById("app"),dev=document.getElementById("device"),url=document.getElementById("url");
+const E=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const W=t=>t.trim()?t.trim().split(/\s+/).length:0;
+const A=()=>ART.find(x=>x.id===S.art), C=()=>CLAIM[S.claim];
+function pc(s){const t=s.a+s.d+s.c,r=[s.a,s.d,s.c].map(n=>n*100/t),f=r.map(Math.floor);
+  let m=100-f.reduce((x,y)=>x+y,0);
+  r.map((v,i)=>({i,q:v-f[i]})).sort((x,y)=>y.q-x.q||x.i-y.i).forEach(({i})=>{if(m>0){f[i]++;m--}});
+  return{t,a:f[0],d:f[1],c:f[2]}}
+const clip=(s,n)=>{s=String(s).trim();if(s.length<=n)return s;
+ return s.slice(0,s.lastIndexOf(" ",n)>0?s.lastIndexOf(" ",n):n).replace(/[,;:]$/,"")+"…"};
+const lens=(t,b)=>S.lens?`<div class="lens"><b>${t}</b>${b}</div>`:"";
+
+/* One claim carries the full worked analysis in this prototype. Entering the
+   analysis screens from any other claim swaps to it and says so, rather than
+   showing a breadcrumb that contradicts the content underneath it. */
+const WORKED="c2";
+const work=()=>{if(S.claim!==WORKED){S.claim=WORKED;S.art=ART.find(a=>a.claim===WORKED).id;S.swap=true}};
+const crail=()=>`<div class="crail"><span class="n">${A().n}</span> ${E(C().s)}
+  ${S.swap?'<span class="swap" title="In this prototype one claim is worked through end to end.">worked example</span>':""}</div>`;
+
+/* ─────────────── chrome ─────────────── */
+const NAV=[["news","News","6"],["debate","Debates","4"],["progress","Progress",""],["profile","Profile",""]];
+const rail=()=>`<nav class="rail">
+  <button class="brand" data-s="landing"><b>Agora</b><span>beta</span></button>
+  ${NAV.map(([k,l,c])=>`<button class="rl" data-s="${k}" ${S.s===k?'aria-current="page"':""}>${l}
+    ${c?`<span class="c">${c}</span>`:""}</button>`).join("")}
+  <div class="railsep"></div>
+  <div class="railcap">Today</div>
+  <button class="rl" data-s="position">Take a position</button>
+  <button class="rl" data-s="composer">Write</button>
+  <button class="cmdk" data-pal="1">⌘K &nbsp;Command</button></nav>`;
+const tbar=()=>`<header class="tbar"><button class="brand" data-s="landing"><b>Agora</b></button>
+  <div class="tabs">${NAV.map(([k,l])=>`<button data-s="${k}" ${S.s===k?'aria-current="page"':""}>${l}</button>`).join("")}</div></header>`;
+
+/* ─────────────── screens ─────────────── */
+const V={};
+
+V.landing=()=>`<div class="land">
+  <p class="k">A place to think, not to post</p>
+  <h1>Read the news. Then find out whether you can defend what you think about it.</h1>
+  <p>You commit to a position before seeing anyone else’s. You write your reasoning. A coach reads it as a structure — and never writes a word of it. Then someone who disagrees answers you, and you discover where you were actually weak.</p>
+  <div class="row"><button class="btn" data-s="news">Read today’s news</button>
+    <button class="btn o" data-s="debate">See what people are arguing</button></div>
+  ${lens("Why this isn’t a debate app","The landing promise is a change in the user, not a place to post. Every downstream screen is built to produce evidence of that change — which is what a chat assistant, a forum and a feed all structurally cannot do.")}
+  <p class="loopk"><i class="h"></i>you do <i></i>Agora does</p>
+  <div class="loop">${[["News",0],["Position",1],["Idea",1],["Argument",1],["Example",1],
+    ["Reading",0],["Opposition",1],["Review",0],["Revision",1],["Record",0]].map(([l,h],i)=>
+    `${i?'<u>→</u>':""}<span class="${h?"h":""}">${l}</span>`).join("")}</div>
+  <div class="thr">
+    <div class="tc"><h4>Serious sources only</h4><p>Reuters, AP, the FT, The Economist, Nature, Science, The Lancet, BBC, Nikkei, Le Monde. Headlines and links — we send you to the publisher.</p></div>
+    <div class="tc"><h4>One claim per story</h4><p>Everyone argues the same proposition, so the split means something and a stranger can genuinely change your mind.</p></div>
+    <div class="tc"><h4>The coach never writes</h4><p>It shows you your own argument as a structure, names what you assumed without saying, and stops. The words stay yours.</p></div>
+  </div></div>`;
+
+V.news=()=>{const l=ART.filter(a=>S.ch==="world"||a.ch===S.ch);
+ return `<div class="wrap w">
+  <p class="eyebrow">News · serious sources</p>
+  <div class="chan">${CH.map(([k,n])=>`<button data-ch="${k}" aria-pressed="${S.ch===k}">${n}</button>`).join("")}</div>
+  ${lens("Acquisition layer, not the product","News gets people in the door and answers “why now”. It is deliberately not where debate happens — fragmenting arguments across thousands of articles would destroy the only mechanic nobody else has.")}
+  <div class="g2">${l.map(a=>`<button class="card" data-art="${a.id}">
+    <p class="tags"><span class="tag"><span class="src">${E(a.pub)}</span></span><span class="tag plain">${a.t} ago</span></p>
+    <h2 class="h2">${E(a.h)}</h2><p class="lede" style="margin:0">${E(a.sf)}</p>
+    <p class="meta"><span>${a.cl.length+1} sources on this story</span><span class="go">The claim under this →</span></p>
+  </button>`).join("")}</div></div>`};
+
+V.article=()=>{const a=A(),c=CLAIM[a.claim];
+ return `<div class="wrap">
+  <button class="btn q sm" data-s="news" style="margin-bottom:16px">← News</button>
+  <p class="tags"><span class="tag"><span class="src">${E(a.pub)}</span></span><span class="tag plain">${a.t} ago</span><span class="tag plain">${a.n}</span></p>
+  <h1 class="h1">${E(a.h)}</h1>
+  <p class="lede" style="font-family:var(--serif);font-size:16px;margin-top:14px">${E(a.sf)}</p>
+  <div class="row" style="margin-top:16px"><button class="btn o sm">Read at ${E(a.pub)} ↗</button></div>
+  <p class="eyebrow sp">Also reporting this</p>
+  <ul class="clus">${a.cl.map(([p,t])=>`<li><span class="p">${E(p)}</span><span>${E(t)}</span></li>`).join("")}</ul>
+  <div class="claimbx"><p class="k">The claim under this story</p><p class="q">${E(c.s)}</p>
+    <p class="lede" style="margin:0 0 14px">Everyone argues the same proposition. That’s what makes the split mean something.</p>
+    <button class="btn" data-claim="${a.claim}">Take a position</button></div>
+  ${lens("The hybrid, in one screen","Articles nominate claims; they don't host debates. This preserves concentration — 400 people on one proposition rather than 3 people under one article — which is what makes splits informative and persuasion events possible at all.")}
+ </div>`};
+
+V.position=()=>{const c=C();
+ if(!S.pos) return `<div class="wrap">
+  <button class="btn q sm" data-s="article" style="margin-bottom:16px">← Article</button>
+  <p class="tags"><span class="tag">From ${E(A().pub)}</span></p>
+  <h1 class="h1">${E(c.s)}</h1>
+  <div class="panel" style="margin-top:22px"><p class="eyebrow" style="margin-bottom:12px">First — where will everyone land?</p>
+    <div class="stx">${["agree","disagree","complicated"].map(s=>`<button class="sb ${s}" data-pred="${s}">${LB[s]}</button>`).join("")}</div>
+    ${S.pred?`<p class="lede" style="margin:12px 0 0">You guessed <b>${LB[S.pred]}</b> leads. Now your own view.</p>`:""}</div>
+  ${S.pred?`<div class="panel" style="margin-top:10px"><p class="eyebrow" style="margin-bottom:12px">Where do <em>you</em> stand?</p>
+    <div class="stx">${["agree","disagree","complicated"].map(s=>`<button class="sb ${s}" data-take="${s}">${LB[s]}</button>`).join("")}</div></div>`:""}
+  ${lens("Commit before reveal","The prediction is the instrument: it measures how well you model people who disagree with you, and it resolves in seconds. No feed product can add this — it requires withholding the thing users came for.")}
+ </div>`;
+ const s={...c.sp};s[{agree:"a",disagree:"d",complicated:"c"}[S.pos]]++;
+ const p=pc(s),k={agree:"a",disagree:"d",complicated:"c"};
+ const lead=["agree","disagree","complicated"].reduce((x,y)=>p[k[y]]>p[k[x]]?y:x);
+ const miss=S.pred&&S.pred!==lead;
+ return `<div class="wrap">
+  <button class="btn q sm" data-s="news" style="margin-bottom:16px">← News</button>
+  <h1 class="h1" style="font-size:clamp(20px,3cqw,28px)">${E(c.s)}</h1>
+  <p style="margin:14px 0 0"><span class="st ${S.pos}">You: ${LB[S.pos]}</span></p>
+  <div class="panel" style="margin-top:14px">
+    <p class="eyebrow" style="margin-bottom:12px">${p.t} people have taken a position</p>
+    <div class="bar">${[["a",p.a],["d",p.d],["c",p.c]].map(([x,v])=>v>0?`<span class="s${x}" style="width:${v}%"></span>`:"").join("")}</div>
+    <ul class="lg">${["agree","disagree","complicated"].map(x=>`<li class="${x===S.pos?"me":""}">
+      <span class="pip ${k[x]}"></span><span class="dim">${LB[x]}</span><span class="v">${p[k[x]]}%</span>
+      ${x===S.pos?'<span class="mytag">you</span>':""}</li>`).join("")}</ul>
+    <div class="callout ${miss?"miss":"hit"}">${miss?`You guessed ${LB[S.pred]} would lead. ${LB[lead]} did — your model of the room was off by a distance.`:"You called the room correctly."}</div></div>
+  <div class="claimbx" style="margin-top:16px"><p class="k">Now — why?</p>
+    <p class="lede" style="margin:0 0 14px">${p[k[S.pos]]<35?"You’re in the minority. That usually means you’re seeing something the majority isn’t."
+      :"You’re with the majority. The interesting question is whether you’d hold this if you weren’t."}</p>
+    <div class="row"><button class="btn" data-s="composer">Write your reasoning</button>
+      <button class="btn q" data-s="debate">Not now</button></div></div></div>`};
+
+/* coach margin */
+function notes(){
+ const o=[];
+ if(S.step===1){const t=S.idea.toLowerCase().trim();
+  if(!t)o.push(["probe","Start here","One sentence. Not whether the claim is true — what you actually think is going on."]);
+  else if(W(t)<6)o.push(["probe","Go one level deeper","Too compressed to disagree with. What would someone have to believe to think you’re wrong?"]);
+  else o.push(["aff","That’s a position","It says something the claim doesn’t. Now the mechanism."]);}
+ if(S.step===2){const t=S.arg.toLowerCase(),w=W(S.arg);
+  if(!t.trim())o.push(["probe","Why is that true?","The chain of cause and effect — not the conclusion again."]);
+  else{const a=t.match(/\b(everyone|everybody|nobody|always|never|obviously|clearly)\b/);
+   if(a)o.push(["flag","Over-generalisation",`“${a[0]}” is doing a lot of work. A single counterexample sinks it — and I have one.`]);
+   if(w>=22)o.push(["aff","The chain is legible","A reader can now say exactly where they get off. That’s what makes it arguable."]);
+   if(w>=14)o.push(["cnt","The strongest objection","A reader will say Korea and Taiwan had shelter <em>and</em> rising productivity. What’s your answer?","addr"]);}}
+ if(S.step===3)o.push(S.ex.trim()?["flag","Check the scope","Your case is one country in one era. Your claim is general. What makes it travel?"]
+   :["probe","A case, not a statistic","Something specific you already know — history, business, science, your own work."]);
+ return o.slice(0,3)}
+const mg=()=>`<h4>The margin</h4><p class="r">Your coach reads, questions and finds cases. It never writes your argument.</p>
+  ${notes().map(([k,t,b,a])=>`<div class="nt2 ${k}"><span class="g">${t}</span><p>${b}</p>
+    ${a==="addr"?'<button class="mini" data-addr="1">Address this</button>':""}</div>`).join("")}`;
+
+V.composer=()=>{
+ if(S.pub)return V.debate();
+ const ok=S.step===1?S.idea.trim().length>12:S.step===2?S.arg.trim().length>40:S.ex.trim().length>15;
+ const d1=S.step>1?`<button class="done" data-j="1"><span class="l">Idea ✓</span><span class="t">${E(S.idea)}</span></button>`:"";
+ const d2=S.step>2?`<button class="done" data-j="2"><span class="l">Argument ✓</span><span class="t">${E(clip(S.arg,96))}</span></button>`:"";
+ let ms;
+ if(S.step===1)ms=`<div class="ms"><span class="lab">Step 1 · Idea</span><p class="pr">What are you trying to say?</p>
+   <p class="sub">One sentence. Not whether the claim is true — what you actually think is going on.</p>
+   <textarea id="ta" class="i" rows="2" placeholder="The binding constraint isn’t the tariff, it’s…">${E(S.idea)}</textarea>
+   <p class="ct">${W(S.idea)} words</p>
+   <div class="msf"><button class="btn" data-gate data-st="n" ${ok?"":"disabled"}>Continue</button></div></div>`;
+ else if(S.step===2)ms=`<div class="ms"><span class="lab">Step 2 · Argument</span><p class="pr">Why do you believe that?</p>
+   <p class="sub">The mechanism — the steps that get you there, not the conclusion again.</p>
+   <textarea id="ta" class="b" placeholder="Because shelter from competition removes the pressure that…">${E(S.arg)}</textarea>
+   <p class="ct">${W(S.arg)} words</p>
+   <div class="msf"><button class="btn q" data-st="b">Back</button>
+     <button class="btn" data-gate data-st="read" ${ok?"":"disabled"}>Let the coach read it</button></div></div>`;
+ else ms=`<div class="ms"><span class="lab">Step 3 · Example</span><p class="pr">What’s one concrete case that makes this real?</p>
+   <p class="sub">A specific instance — history, business, science, your own work. Not a statistic. A case.</p>
+   <textarea id="ta" class="b" style="min-height:86px" placeholder="Korea industrialised behind tariffs but…">${E(S.ex)}</textarea>
+   <p class="ct">${W(S.ex)} words</p>
+   <div class="msf"><button class="btn q" data-st="b">Back</button>
+     <button class="btn" data-gate data-s="examples" ${ok?"":"disabled"}>Find structural analogues</button></div></div>`;
+ return `<div class="wrap w">${crail()}
+  <ul class="steps"><li data-on="${S.step===1}" data-done="${S.step>1}">Idea</li>
+   <li data-on="${S.step===2}" data-done="${S.step>2}">Argument</li>
+   <li data-on="${S.step===3}" data-done="false">Example</li><li>Evidence</li></ul>
+  <div class="cmp"><div>${d1}${d2}${ms}
+   ${lens("Why ChatGPT can’t be this","A chat assistant optimises for producing your argument. This surface is architecturally incapable of it — the coach lives outside the manuscript and its output grammar permits only questions, diagnoses and citations.")}</div>
+   <aside class="mg" id="mg">${mg()}</aside></div></div>`};
+
+/* THE READING */
+V.reading=()=>`<div class="wrap w">
+  ${crail()}
+  <p class="eyebrow">How I read your argument</p>
+  <div class="read"><div class="readhd"><span class="t">Parsed structure</span>
+    <span class="s">4 claims · 2 implicit · 1 scheme</span></div>
+   <div class="readbd"><ul class="pl">
+    <li><span class="k">Thesis</span><span class="x">${E(S.idea||SEED.idea)}</span><span class="f ok">identified</span></li>
+    <li><span class="k">Premise 1</span><span class="x">Shelter from competition removes the pressure that forces firms to improve.</span><span class="f qq">unsupported</span></li>
+    <li><span class="k">Premise 2</span><span class="x">Managers who cannot lose market share have no reason to cut costs.</span><span class="f ok">supports P1</span></li>
+    <li class="imp"><span class="k">Implicit</span><span class="x">Nothing else can substitute for market competition as a performance test.</span><span class="f no">load-bearing</span></li>
+    <li class="imp"><span class="k">Implicit</span><span class="x">Firms respond to pressure by improving rather than by seeking more protection.</span><span class="f qq">contestable</span></li>
+    <li><span class="k">Conclusion</span><span class="x">Protection is self-defeating over any long horizon.</span><span class="f no">exceeds premises</span></li>
+   </ul>
+
+   <div class="scheme"><div class="n">Argumentation scheme detected</div>
+    <div class="v">Argument from cause to effect</div>
+    <p class="cq">Every scheme comes with critical questions. Answer them and the argument holds; leave one open and that is where you will be attacked.</p>
+    <ul><li>Is there a general causal law linking shelter to reduced improvement?</li>
+        <li>Could the causation run the other way — do declining sectors seek protection?</li>
+        <li>Are there intervening factors that break the chain?</li></ul>
+    <p class="lede" style="margin:9px 0 0;font-size:12.5px">You have answered none of the three. The first is the one your argument actually needs.</p></div>
+
+   <div class="diagn">
+    <div class="dg hi"><span class="sev">High</span><div><b>Over-generalisation.</b> “Everyone knows” and “any long horizon” are universal quantifiers. Your evidence supports a bounded claim; your conclusion is unbounded. One counterexample defeats it — and the library holds four.</div></div>
+    <div class="dg hi"><span class="sev">High</span><div><b>Unstated assumption is load-bearing.</b> Your argument only works if nothing can substitute for market competition. Korea substituted export quotas. That single fact is the hinge of the whole disagreement.</div></div>
+    <div class="dg md"><span class="sev">Medium</span><div><b>Conclusion exceeds premises.</b> You establish that pressure falls. You conclude that protection is self-defeating. The step from “less pressure” to “net harm” is not made.</div></div>
+    <div class="dg lo"><span class="sev">Low</span><div><b>No emotional reasoning detected.</b> Your language is measured throughout — unusual on this topic and worth keeping.</div></div>
+   </div>
+
+   <div class="relv"><b>Relevance</b> On-point. Your thesis bears directly on the claim’s truth, and every premise connects to the thesis. No off-topic material.</div>
+  </div></div>
+  ${lens("This is the moat, visibly","Nothing here is generic advice — it is a parse of one specific person's reasoning, retained, comparable against their own history. The value compounds with time in market and cannot be reconstructed retroactively by anyone, at any model scale.")}
+  <div class="row" style="margin-top:16px"><button class="btn" data-st="ex3">Now give me an example</button>
+    <button class="btn q" data-s="composer">Keep editing</button></div></div>`;
+
+/* EXAMPLES */
+V.examples=()=>{
+ const list=S.dom==="all"?EX:EX.filter(e=>e.d===S.dom);
+ const R={sup:"structurally supports",brk:"breaks your mechanism",qual:"bounds your claim"};
+ return `<div class="wrap w">
+  ${crail()}
+  <p class="eyebrow">Structural analogues</p>
+  <div class="mech"><p class="k">The mechanism I extracted</p><p class="m">${MECH}</p>
+   <p class="sub">I searched for cases with this causal shape — not this vocabulary. None of the results below share meaningful wording with what you wrote.</p></div>
+  <div class="dchips">${DOMS.map(([k,l,n])=>`<button class="dchip" data-dom="${k}" aria-pressed="${S.dom===k}">${l}<span class="n">${n}</span></button>`).join("")}</div>
+  <div class="exs">${list.map((e,i)=>`<div class="ex ${e.r}">
+    <div class="exh"><span class="exd">${E(e.d)}</span><span class="exv">${R[e.r]}</span></div>
+    <p class="t">${E(e.t)}</p><p class="b">${E(e.b)}</p>
+    <div class="map"><span class="mk">Structural mapping</span>
+      ${e.map.map(([a,b])=>`<div>${a} → ${E(b)}</div>`).join("")}</div>
+    <div class="brkline"><b>${e.r==="brk"?"Where it breaks you":"Where it breaks"}</b><span>${E(e.brk)}</span></div>
+    <div class="exf"><button class="btn o sm" data-cite="${EX.indexOf(e)}">Cite this</button>
+      <button class="btn q sm">Open mechanism page</button></div></div>`).join("")}</div>
+  ${S.cite!==null&&EX[S.cite]?`<div class="cited"><span>✓</span><div><b>${E(EX[S.cite].t)}</b> attached to your argument.</div></div>`:""}
+  <input class="srch" placeholder="Search by mechanism — e.g. “removing a performance test degrades quality”">
+  ${lens("Not semantic search","Retrieval runs over a curated mechanism ontology and returns supporting, bounding and breaking cases by default. Symmetric retrieval is a product decision no engagement-optimised system will make, and the ontology takes years of human curation.")}
+  <div class="panel q" style="margin-top:18px"><p class="eyebrow" style="margin-bottom:10px">Before you publish</p>
+    <p class="lede" style="margin:0 0 12px">Which part will a critic attack first?</p>
+    <div class="row">${["thesis","mechanism","implicit assumption","example"].map(k=>
+      `<button class="tg" style="flex:1;min-width:120px" data-weak="${k}" aria-pressed="${S.weak===k}"><b>${k}</b></button>`).join("")}</div>
+    <div class="row" style="margin-top:14px"><button class="btn" data-st="pub" ${S.weak?"":"disabled"}>Publish</button>
+      <button class="btn q" data-s="composer">Back to writing</button></div></div></div>`};
+
+V.debate=()=>{const c=C();
+ const s={...c.sp};if(S.pos)s[{agree:"a",disagree:"d",complicated:"c"}[S.pos]]++;
+ const p=pc(s),k={agree:"a",disagree:"d",complicated:"c"};
+ const mine=S.pub?`<blockquote class="ex sup" style="border-left-width:3px">
+   <div class="exh"><span class="exd">You · just now</span><span class="exv">${S.rev?"revised · narrowed":"v1"}</span></div>
+   <p class="t" style="font-size:14.5px">${E(S.idea||SEED.idea)}</p>
+   <p class="b">${E(S.rev?"Shelter from competition removes the pressure that forces firms to improve — absent an external discipline like export competition, which is what distinguishes Korea from most protected economies.":(S.arg||SEED.arg))}</p>
+   <p class="b" style="font-style:italic;color:var(--ink-3)">${E(S.ex||SEED.ex)}</p></blockquote>`:"";
+ return `<div class="wrap">
+  <p class="tags"><span class="tag"><span class="src">${E(A().pub)}</span></span><span class="tag plain">${A().n}</span></p>
+  <h1 class="h1" style="font-size:clamp(20px,3cqw,28px)">${E(c.s)}</h1>
+  <div class="panel" style="margin-top:14px"><p class="eyebrow" style="margin-bottom:12px">${p.t} positions</p>
+   <div class="bar">${[["a",p.a],["d",p.d],["c",p.c]].map(([x,v])=>`<span class="s${x}" style="width:${v}%"></span>`).join("")}</div>
+   <ul class="lg">${["agree","disagree","complicated"].map(x=>`<li class="${x===S.pos?"me":""}">
+     <span class="pip ${k[x]}"></span><span class="dim">${LB[x]}</span><span class="v">${p[k[x]]}%</span>
+     ${x===S.pos?'<span class="mytag">you</span>':""}</li>`).join("")}</ul></div>
+  ${S.pub?`<div class="claimbx" style="margin-top:14px;background:var(--raised);border-color:var(--line-2)">
+    <p class="k" style="color:var(--ink-4)">Opposition · answered in 6 hours</p>
+    <p class="lede" style="margin:0 0 14px"><b>candid_quarry_881</b>, who disagrees with you, has attacked one specific part of your argument. The review board is open.</p>
+    <button class="btn" data-s="review">Open the review board</button></div>`:""}
+  <p class="eyebrow sp">The debate</p>
+  <div style="display:grid;gap:9px">${mine}
+   <blockquote class="ex brk"><div class="exh"><span class="exd">candid_quarry_881 · disagrees</span><span class="exv">opposition</span></div>
+    <p class="b">Every economy that industrialised did it behind tariffs and then recommended free trade to everyone else. Korea and Taiwan had shelter <em>and</em> rising productivity at the same time — your mechanism has to explain that, not assume it away.</p></blockquote>
+   <blockquote class="ex qual"><div class="exh"><span class="exd">steady_meridian_204 · agrees</span><span class="exv">same side</span></div>
+    <p class="b">The discipline of exports is what made Korea different, and most protection has no such discipline. That distinction is doing all the work in this debate.</p></blockquote></div>
+  ${lens("Why Reddit can’t copy this","Opposition is matched, structural and guaranteed within 24 hours — and it is rated by its recipient for whether it found a real weakness. A comment section optimises for volume and agreement; this optimises for the one objection that actually threatens the argument.")}
+ </div>`};
+
+V.review=()=>`<div class="wrap">
+  <button class="btn q sm" data-s="debate" style="margin-bottom:16px">← Debate</button>
+  <div class="rbh"><p class="eyebrow" style="margin:0">Review board</p><span class="tag plain">24h after publishing</span></div>
+  <h1 class="h1" style="font-size:clamp(19px,2.8cqw,26px)">${E(C().s)}</h1>
+  <ul class="tl"><li class="on">Published</li><li class="on">Opposed · 6h</li><li class="on">Review · 24h</li><li>Revision window</li><li>Sealed · 7d</li></ul>
+
+  <div class="panel"><p class="eyebrow" style="margin-bottom:12px">Where you were attacked</p>
+   <ul class="strk">
+    <li><div class="nm"><b>Thesis</b><span>${E(clip(S.idea||SEED.idea,58))}</span></div><span class="vd">held</span></li>
+    <li class="hit"><div class="nm"><b>Implicit assumption</b><span>Nothing can substitute for market competition</span></div><span class="vd">◄ undercut</span></li>
+    <li><div class="nm"><b>Premise 2</b><span>Managers who can’t lose share won’t cut costs</span></div><span class="vd">held</span></li>
+    <li><div class="nm"><b>Example</b><span>${E(clip(S.ex||SEED.ex,52))}</span></div><span class="vd">held</span></li>
+   </ul>
+   <p class="lede" style="margin:14px 0 0">They did not attack your conclusion. They attacked the step you never wrote down — and it was the step holding everything else up.</p></div>
+
+  <div class="pgrid">
+   <div class="pbox"><div class="k">You predicted they’d hit</div><div class="v">${E(S.weak||"example")}</div></div>
+   <div class="pbox ${S.weak==="implicit assumption"?"":"wrong"}"><div class="k">They actually hit</div><div class="v">implicit assumption</div></div>
+  </div>
+  <p class="lede" style="margin:12px 0 0">${S.weak==="implicit assumption"
+    ? "You called it. Knowing your own weakest link before anyone tells you is the skill that eventually makes this coach unnecessary."
+    : "You didn’t see it coming — and that gap is the point. Closing it, over months, is the whole skill."}</p>
+
+  <div class="panel" style="margin-top:16px"><p class="eyebrow" style="margin-bottom:10px">What I flagged, and you published anyway</p>
+   <p class="lede" style="margin:0">Before you published I marked that assumption <b>load-bearing</b> and told you Korea substituted export quotas for market discipline. You kept the general claim. That is exactly the step that got hit.</p></div>
+
+  <div class="onemove"><b>The one move.</b> Narrow it — shelter reduces the pressure to improve <em>absent an external performance test</em>, which is precisely what Korea had. That single clause absorbs their counterexample and makes your claim stronger, not weaker.</div>
+  <div class="row" style="margin-top:16px"><button class="btn" data-s="revision">Revise</button>
+   <button class="btn o">Concede the point</button><button class="btn q">Let it stand</button></div>
+  ${lens("The soul of the product","Publishing is the start. This screen turns a public disagreement into a private lesson, and it produces the behavioural record — predicted weakness vs actual weakness, over years — that is the asset no frontier model can synthesise.")}
+ </div>`;
+
+V.revision=()=>`<div class="wrap">
+  <button class="btn q sm" data-s="review" style="margin-bottom:16px">← Review</button>
+  <p class="eyebrow">Revision</p><h2 class="h2">What kind of change is this?</h2>
+  <p class="lede" style="margin:0">The tag matters more than the edit. Narrowing isn’t losing — a claim scoped to where it’s true is a stronger claim.</p>
+  <div class="tgs">${TAGS.map(([k,t,d])=>`<button class="tg" data-tag="${k}" aria-pressed="${S.tag===k}"><b>${t}</b><span>${d}</span></button>`).join("")}</div>
+  <div class="dv"><span class="l">v1 · published</span><p>Shelter from competition removes the pressure that forces firms to improve. Protection is therefore self-defeating over any long horizon.</p></div>
+  <div class="dv n"><span class="l">v2 · ${E((TAGS.find(t=>t[0]===S.tag)||[,"select a tag"])[1])}</span>
+   <p>Shelter from competition removes the pressure that forces firms to improve <ins>— absent an external performance test such as export competition</ins>. Protection is therefore self-defeating <ins>where no such substitute exists</ins>.</p></div>
+  ${S.rev?`<div class="ackbx"><b>◆ candid_quarry_881: “Yes — that answers it.”</b>
+    A person who disagreed with you says your reasoning improved. It is the rarest signal in the product, and the only one that certifies learning rather than activity.</div>`:""}
+  <div class="row" style="margin-top:16px"><button class="btn" data-rev="1" ${S.tag?"":"disabled"}>${S.rev?"Revised":"Publish revision"}</button>
+   <button class="btn q" data-s="debate">Back to the debate</button></div></div>`;
+
+V.progress=()=>`<div class="wrap w">
+  <p class="eyebrow">Progress · season 4</p>
+  <div class="stg">
+   <div class="stt"><div class="v">96</div><div class="k">Arguments</div></div>
+   <div class="stt"><div class="v">22</div><div class="k">Revisions</div><div class="d">↑ 8 this season</div></div>
+   <div class="stt"><div class="v">14</div><div class="k">“That answers it”</div><div class="d">↑ 5</div></div>
+   <div class="stt"><div class="v">7</div><div class="k">Changed your mind</div></div></div>
+  <div class="onemove" style="margin-bottom:22px"><b>Season 4.</b> Your arguments are getting attacked on your evidence now, not on your assumptions. That’s a promotion.</div>
+  <p class="eyebrow">How your arguments are built</p>
+  <div class="evo">
+   <div class="evc"><div class="m">Month 1</div><pre>  thesis
+    │
+  premise</pre><div class="c">2 nodes<br>0 warrants stated</div></div>
+   <div class="evc"><div class="m">Month 4</div><pre>   thesis
+ ╱   │   ╲
+prem prem prem
+       │
+     case</pre><div class="c">6 nodes<br>1 warrant stated</div></div>
+   <div class="evc"><div class="m">Month 12</div><pre>    thesis
+ ╱   │   ╲  ╲
+prem prem prem qual
+  │    │    │
+case case ⟨warrant⟩
+            │
+        objection
+        pre-empted</pre><div class="c">11 nodes<br>2 warrants stated</div></div></div>
+  <p class="eyebrow sp">How often the coach speaks</p>
+  <div class="crv"><p class="axl">Coach interventions per argument · <span>fewer is better</span></p>
+   ${[["Season 1",4.1,100],["Season 2",3.2,78],["Season 3",2.0,49],["Season 4",1.3,32]].map(([l,v,w])=>
+   `<div class="cr"><span class="l">${l}</span><span class="t"><span class="f" style="--w:${w}%"></span></span><span class="v">${v}</span></div>`).join("")}
+   <p class="lede" style="margin:10px 0 0">I spoke half as often as last season. You’re catching things I used to catch for you.</p></div>
+  <p class="eyebrow sp">Where opposition hits you</p>
+  <div class="crv">
+   <div class="hm"><div class="hmc"></div>${["M1–3","M4–6","M7–9","M10–12"].map(h=>`<div class="hmh">${h}</div>`).join("")}
+    ${ATK.map(([r,v])=>`<div class="hmr">${r}</div>`+v.map((n,i)=>
+      `<div class="hmx"><i data-n="${n}" style="--d:${i*.05}s"></i>${n===Math.max(...v)&&n>0?'<u></u>':""}</div>`).join("")).join("")}</div>
+   <div class="hml"><span>Fewer attacks</span>${[0,1,2,3,4].map(n=>`<i data-n="${n}"></i>`).join("")}<span>More</span>
+    <span class="pk"><u></u> peak</span></div>
+   <p class="lede" style="margin:10px 0 0">You started stating your assumptions, so they became attackable. Then you started citing evidence, so that did too. <b>The attack surface moved up the stack — that is the progression.</b></p></div>
+  <p class="eyebrow sp">Your own words</p>
+  <div class="pr2">
+   <div class="prc"><span class="w">Month 1</span><p>Protectionism obviously hurts growth because competition makes companies better and tariffs remove competition.</p></div>
+   <div class="prc"><span class="w">Month 12</span><p>Shelter reduces the pressure to improve — absent an external discipline like export competition. Korea had that discipline; most protected economies don’t, which is why the cross-country average misleads.</p></div></div>
+  ${lens("Progression without a score","Nothing here is a number we invented. Structure, intervention rate, attack surface and the user's own prose. It is unfakeable, uncomparable between users, and impossible to reconstruct without years of retained behaviour.")}
+ </div>`;
+
+V.profile=()=>`<div class="wrap">
+  <p class="eyebrow">Profile</p><h2 class="h2">quiet_harbor_412</h2>
+  <p class="lede" style="margin:0">Training since 2026 · economics · tech &amp; ai</p>
+  <div class="tt"><span class="ttl">Steelmanner</span><span class="ttl">Mind-Changer</span><span class="ttl">Evidence Builder</span></div>
+  <p class="eyebrow sp">Visible to others</p>
+  <div class="prow"><span class="d">Today</span><span class="c">${E(C().s)}</span>
+   <span class="row"><span class="st ${S.pos||"disagree"}">${LB[S.pos||"disagree"]}</span>${S.rev?'<span class="st agree">revised</span>':""}</span></div>
+  <div class="prow"><span class="d">12 Jul</span><span class="c">Nuclear power is the most realistic path to decarbonisation.</span>
+   <span class="row"><span class="st complicated">It’s complicated</span><span class="st agree">changed mind</span></span></div>
+  <div class="prow"><span class="d">09 Jul</span><span class="c">Chip subsidies are national security spending.</span>
+   <span class="row"><span class="st agree">Agree</span></span></div>
+  <p class="eyebrow sp">Also visible</p>
+  <div class="crv">
+   <div class="cr"><span class="l">Changed mind</span><span class="t"><span class="f" style="--w:100%"></span></span><span class="v">7</span></div>
+   <div class="cr"><span class="l">Revisions</span><span class="t"><span class="f" style="--w:80%"></span></span><span class="v">22</span></div>
+   <div class="cr"><span class="l">Cases added</span><span class="t"><span class="f" style="--w:60%"></span></span><span class="v">47</span></div>
+   <p class="lede" style="margin:10px 0 0"><b>Times you changed your mind</b> is the line we put first. It advertises correctability rather than correctness.</p></div>
+  <p class="eyebrow sp">Private — always</p>
+  <div class="priv">Every skill measurement · everything the coach ever said to you · your calibration score · every drill · your intervention rate.<br><br>
+   <b>No score. No level. No rank. No percentile. No comparison to any other user, anywhere.</b></div>
+  ${lens("The asset","This record — years of a specific person's reasoning under adversarial pressure from real humans, with the errors left in — is what a credential is eventually built on. It only accumulates in real time. There is no retroactive path for any competitor.")}
+ </div>`;
+
+/* ─────────────── palette ─────────────── */
+const CMDS=[["news","Go to News","G N"],["debate","Go to Debates","G D"],["progress","Progress","G P"],
+ ["profile","Profile","G U"],["composer","Write an argument","W"],["reading","See the coach’s reading","R"],
+ ["examples","Find structural analogues","E"],["review","Open review board","B"]];
+const pal=()=>`<div class="scrim" data-close="1"><div class="pal" role="dialog" aria-label="Command palette">
+ <input placeholder="Search screens and actions…" autofocus>
+ <ul>${CMDS.map(([k,l,kb])=>`<li><button data-s="${k}">${l}<span class="kb">${kb}</span></button></li>`).join("")}</ul></div></div>`;
+
+/* ─────────────── render ─────────────── */
+const P={landing:"/",news:"/news",article:"/news/story",position:"/c/protectionism",
+ composer:"/c/protectionism/write",reading:"/c/protectionism/reading",examples:"/c/protectionism/analogues",
+ debate:"/d/protectionism",review:"/d/protectionism/review",revision:"/d/protectionism/revise",
+ progress:"/me/progress",profile:"/me"};
+function render(){
+ const body=(V[S.s]||V.landing)();
+ url.textContent="agora.example"+(P[S.s]||"/");
+ app.innerHTML=`${S.s==="landing"?"":tbar()}<div class="rowx">${rail()}<main class="main">${body}</main></div>${S.pal?pal():""}`;
+ document.querySelectorAll(".seg [data-s]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.s===S.s)));
+ const ta=document.getElementById("ta");
+ if(ta){ta.focus();
+  const g=()=>{if(S.step>1){ta.style.height="auto";ta.style.height=ta.scrollHeight+"px"}};g();
+  let t;ta.addEventListener("input",()=>{
+   S[S.step===1?"idea":S.step===2?"arg":"ex"]=ta.value;g();
+   const c=app.querySelector(".ct");if(c)c.textContent=W(ta.value)+" words";
+   /* every step's forward CTA carries data-gate, so all three unlock live —
+      not just the two that happen to route through data-st */
+   const min={1:12,2:40,3:15}[S.step];
+   app.querySelectorAll("[data-gate]").forEach(x=>{x.disabled=ta.value.trim().length<=min});
+   clearTimeout(t);const m=document.getElementById("mg");
+   if(m){m.innerHTML=`<h4>The margin</h4><p class="r">Reading…</p><div class="think"><i></i><i></i><i></i></div>`;
+    t=setTimeout(()=>{m.innerHTML=mg()},620)}});}
+ const pi=app.querySelector(".pal input");if(pi)pi.focus();
+}
+app.addEventListener("click",e=>{
+ const t=e.target.closest("[data-s],[data-ch],[data-art],[data-claim],[data-pred],[data-take],[data-st],[data-j],[data-addr],[data-dom],[data-cite],[data-weak],[data-tag],[data-rev],[data-pal],[data-close]");
+ if(!t){return}
+ const d=t.dataset;
+ if(d.close!==undefined&&t.classList.contains("scrim")){S.pal=false}
+ else if(d.pal){S.pal=true}
+ else if(d.s){S.s=d.s;S.pal=false;
+   if(d.s==="composer"&&S.pub){S.pub=false;S.step=1}
+   if(["composer","reading","examples","review","revision","debate"].includes(d.s))work();
+   if(["reading","examples","review","revision","debate"].includes(d.s)){
+     S.pos=S.pos||"agree";S.idea=S.idea||SEED.idea;S.arg=S.arg||SEED.arg;S.ex=S.ex||SEED.ex;
+     if(["review","revision"].includes(d.s)){S.pub=true;S.weak=S.weak||"example"}
+     if(d.s==="debate"&&!S.pub){S.pub=true;S.weak=S.weak||"example"}}}
+ else if(d.ch){S.ch=d.ch}
+ else if(d.art){S.art=d.art;S.claim=A().claim;S.s="article"}
+ else if(d.claim){S.claim=d.claim;S.s="position"}
+ else if(d.pred){S.pred=d.pred}
+ else if(d.take){S.pos=d.take}
+ else if(d.j){S.step=Number(d.j)}
+ else if(d.addr){S.arg=S.arg.replace(/\s*$/,"")+"\n\nMy answer to that: "}
+ else if(d.dom){S.dom=d.dom}
+ else if(d.cite){S.cite=Number(d.cite)}
+ else if(d.weak){S.weak=d.weak}
+ else if(d.tag){S.tag=d.tag}
+ else if(d.rev){S.rev=true}
+ else if(d.st){
+  if(d.st==="n")S.step=Math.min(3,S.step+1);
+  if(d.st==="b")S.step=Math.max(1,S.step-1);
+  if(d.st==="read"){S.s="reading"}
+  if(d.st==="ex3"){S.step=3;S.s="composer"}
+  if(d.st==="pub"){S.pub=true;S.s="debate"}}
+ render();
+});
+document.addEventListener("keydown",e=>{
+ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();S.pal=!S.pal;render()}
+ if(e.key==="Escape"&&S.pal){S.pal=false;render()}});
+document.querySelectorAll(".seg [data-s]").forEach(b=>b.onclick=()=>{
+ const s=b.dataset.s;
+ if(["composer","reading","examples","review","revision","debate"].includes(s))work();
+ if(["reading","examples","review","revision","debate"].includes(s)){
+  S.pos=S.pos||"agree";S.idea=S.idea||SEED.idea;S.arg=S.arg||SEED.arg;S.ex=S.ex||SEED.ex;
+  S.weak=S.weak||"example";if(["review","revision","debate"].includes(s))S.pub=true}
+ if(s==="composer"){S.pub=false;S.step=1}
+ if(s==="position"){S.pos=null;S.pred=null}
+ S.s=s;render()});
+document.getElementById("lens").onclick=function(){S.lens=!S.lens;
+ this.setAttribute("aria-pressed",String(S.lens));render()};
+const sz=s=>{dev.dataset.size=s;
+ document.getElementById("dk").setAttribute("aria-pressed",String(s==="desk"));
+ document.getElementById("ph").setAttribute("aria-pressed",String(s==="phone"))};
+document.getElementById("dk").onclick=()=>sz("desk");
+document.getElementById("ph").onclick=()=>sz("phone");
+render();
+</script>
